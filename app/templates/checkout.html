@@ -219,21 +219,33 @@
 
         try {
             // Call real server to generate and store the license
-            const response = await fetch('/checkout/generate', { method: 'POST' });
-            const data = await response.json();
+            const response = await fetch('/checkout/generate', { 
+                method: 'POST',
+                headers: { 'Accept': 'application/json' }
+            });
             
+            if (!response.ok) {
+                const errorData = await response.text();
+                console.error("Server Error:", response.status, errorData);
+                alert(`Server error (${response.status}). Please try again or check logs.`);
+                payBtn.innerText = 'Pay now';
+                payBtn.disabled = false;
+                return;
+            }
+
+            const data = await response.json();
             if (data.license_key) {
                 document.getElementById('keyOutput').innerText = data.license_key;
                 document.getElementById('step1').style.display = 'none';
                 document.getElementById('step2').style.display = 'block';
             } else {
-                alert("Server error during generation. Please contact support.");
+                alert("Internal error: License key was not returned.");
                 payBtn.innerText = 'Pay now';
                 payBtn.disabled = false;
             }
         } catch (err) {
-            console.error(err);
-            alert("Network error. Make sure the Deadhand server is running.");
+            console.error("Fetch Error:", err);
+            alert("Connection error: The server might be timing out or the database is unreachable. Check your Vercel logs.");
             payBtn.innerText = 'Pay now';
             payBtn.disabled = false;
         }
