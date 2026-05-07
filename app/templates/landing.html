@@ -595,11 +595,36 @@
             }
         }
 
+        @media (max-width: 600px) {
+            .footer-grid {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+            .footer-grid > div:first-child a {
+                justify-content: center;
+            }
+            .footer-bottom {
+                flex-direction: column-reverse;
+                gap: 24px;
+                text-align: center;
+            }
+        }
+
         /* Footer */
         .footer {
             background: var(--bg-secondary);
             border-top: 1px solid var(--border);
             padding: 100px 0 40px;
+        }
+
+        .footer-bottom {
+            border-top: 1px solid var(--border);
+            padding-top: 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
         }
 
         .footer-grid {
@@ -1019,8 +1044,7 @@
                     <a href="/terms" class="footer-link">Legal</a>
                 </div>
             </div>
-            <div
-                style="border-top: 1px solid var(--border); padding-top: 40px; display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--text-secondary);">
+            <div class="footer-bottom">
                 <span>© 2026 half radiation LLC. All rights reserved.</span>
                 <div style="display: flex; gap: 24px;">
                     <a href="https://x.com/deadhandhq" style="color: inherit;"><i class="fab fa-x-twitter"></i></a>

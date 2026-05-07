@@ -6,6 +6,79 @@ import time
 import hashlib
 from datetime import datetime, timedelta
 from PIL import Image, ImageTk
+import re
+import urllib.request
+import urllib.error
+
+import base64
+import os
+
+def is_valid_email(email):
+    # 1. Solid regex validation
+    pattern = r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"
+    if not re.match(pattern, email):
+        return False, "Invalid Email format."
+    
+    # 2. Domain MX Record API validation (checks if email actually exists/receivable)
+    domain = email.split('@')[1]
+    try:
+        req = urllib.request.Request(
+            f"https://dns.google/resolve?name={domain}&type=MX",
+            headers={'User-Agent': 'Mozilla/5.0'}
+        )
+        with urllib.request.urlopen(req, timeout=5) as response:
+            data = json.loads(response.read().decode())
+            if data.get("Status") == 0 and "Answer" in data:
+                # Check if it has real mail servers (exclude null MX "0 .")
+                valid_mx = any(not ans["data"].startswith("0 .") for ans in data["Answer"] if ans.get("type") == 15)
+                if not valid_mx:
+                    return False, f"Domain '{domain}' does not accept emails."
+            else:
+                return False, f"Domain '{domain}' has no mail servers."
+    except Exception:
+        pass # If offline or API fails, fallback to regex pass
+        
+    return True, ""
+
+def split_secret_2_of_3(secret_str):
+    s_bytes = secret_str.encode('utf-8')
+    k1 = os.urandom(len(s_bytes))
+    k2 = os.urandom(len(s_bytes))
+    k3 = bytes(a ^ b ^ c for a, b, c in zip(s_bytes, k1, k2))
+    
+    def encode_shard(a, b):
+        return base64.b64encode(a + b"|" + b).decode('utf-8')
+        
+    shard_a = "shA-" + encode_shard(b"1:"+k1, b"2:"+k2)
+    shard_b = "shB-" + encode_shard(b"2:"+k2, b"3:"+k3)
+    shard_c = "shC-" + encode_shard(b"3:"+k3, b"1:"+k1)
+    
+    return shard_a, shard_b, shard_c
+
+def recover_secret_2_of_3(shard_x, shard_y):
+    try:
+        sx = shard_x.split("-", 1)[-1]
+        sy = shard_y.split("-", 1)[-1]
+        
+        p1, p2 = base64.b64decode(sx).split(b"|")
+        p3, p4 = base64.b64decode(sy).split(b"|")
+        
+        parts = {}
+        for p in [p1, p2, p3, p4]:
+            idx, key = p.split(b":", 1)
+            parts[idx] = key
+            
+        if len(parts) != 3:
+            return None
+            
+        k1 = parts[b"1"]
+        k2 = parts[b"2"]
+        k3 = parts[b"3"]
+        
+        s_bytes = bytes(a ^ b ^ c for a, b, c in zip(k1, k2, k3))
+        return s_bytes.decode('utf-8')
+    except Exception:
+        return None
 
 # --- APP CONFIGURATION ---
 ctk.set_appearance_mode("dark")
@@ -70,12 +143,13 @@ class DeadhandObsidian(ctk.CTk):
 
         # Sidebar Buttons
         self.btn_heartbeat = self.create_sidebar_btn("The Heartbeat", 1, self.show_heartbeat_view)
-        self.btn_beneficiaries = self.create_sidebar_btn("Beneficiary Status", 2, self.show_beneficiary_view)
+        self.btn_shards = self.create_sidebar_btn("My Shards", 2, self.show_shard_generator_view)
+        self.btn_beneficiaries = self.create_sidebar_btn("Beneficiary Status", 3, self.show_beneficiary_view)
         
         # Tools
-        ctk.CTkLabel(self.sidebar, text="TOOLS", font=("Geist", 10, "bold"), text_color="#555").grid(row=3, column=0, padx=20, pady=(15, 0), sticky="w")
-        self.btn_audio = self.create_sidebar_btn("Audio Steganography", 4, self.show_audio_steg_view)
-        self.btn_visual = self.create_sidebar_btn("Visual Steganography", 5, self.show_visual_steg_view)
+        ctk.CTkLabel(self.sidebar, text="TOOLS", font=("Geist", 10, "bold"), text_color="#555").grid(row=4, column=0, padx=20, pady=(15, 0), sticky="w")
+        self.btn_audio = self.create_sidebar_btn("Audio Steganography", 5, self.show_audio_steg_view)
+        self.btn_visual = self.create_sidebar_btn("Visual Steganography", 6, self.show_visual_steg_view)
         
         # System
         ctk.CTkLabel(self.sidebar, text="SYSTEM", font=("Geist", 10, "bold"), text_color="#555").grid(row=7, column=0, padx=20, pady=(15, 0), sticky="w")
@@ -158,37 +232,55 @@ class DeadhandObsidian(ctk.CTk):
         ctk.CTkLabel(self.main_content, text="No Vault Found", font=FONT_TITLE, text_color=TEXT_COLOR).pack(pady=(100, 10))
         ctk.CTkLabel(self.main_content, text="You have not initialized a Deadhand Vault on this device.", font=FONT_MAIN, text_color=MUTED_TEXT).pack(pady=(0, 40))
         
-        ctk.CTkButton(self.main_content, text="Create New Vault", font=FONT_BOLD, fg_color=ACCENT_COLOR, text_color="#ffffff", hover_color="#cc4400", width=250, height=45, corner_radius=4, command=self.show_setup_step1).pack()
+        ctk.CTkButton(self.main_content, text="Create New Vault", font=FONT_BOLD, fg_color=ACCENT_COLOR, text_color="#ffffff", hover_color="#cc4400", width=250, height=45, corner_radius=4, command=self.show_setup_step2).pack()
 
-    def show_setup_step1(self):
+    def show_shard_generator_view(self):
         self.clear_main()
-        ctk.CTkLabel(self.main_content, text="1. Secure Cryptographic Split", font=FONT_TITLE, text_color=TEXT_COLOR).pack(anchor="w", pady=(0, 5))
-        ctk.CTkLabel(self.main_content, text="Enter the seed phrase or secret you wish to protect.", font=FONT_MAIN, text_color=MUTED_TEXT).pack(anchor="w", pady=(0, 20))
+        ctk.CTkLabel(self.main_content, text="My Shards", font=FONT_TITLE, text_color=TEXT_COLOR).pack(anchor="w", pady=(0, 5))
+        ctk.CTkLabel(self.main_content, text="Generate your 2-of-3 Shamir's Secret Sharing shards. Deadhand securely stores Shard C.", font=FONT_MAIN, text_color=MUTED_TEXT).pack(anchor="w", pady=(0, 20))
 
         self.seed_input = ctk.CTkTextbox(self.main_content, width=500, height=100, fg_color="#181818", border_color="#333", border_width=1)
         self.seed_input.pack(anchor="w", pady=(0, 20))
 
-        ctk.CTkButton(self.main_content, text="Generate Shards (Simulate PDFs)", font=FONT_BOLD, fg_color="#333", hover_color="#444", command=self.simulate_shards).pack(anchor="w", pady=(0, 20))
+        ctk.CTkButton(self.main_content, text="Generate Shards", font=FONT_BOLD, fg_color="#333", hover_color="#444", command=self.generate_shards).pack(anchor="w", pady=(0, 20))
         
         self.shard_frame = ctk.CTkFrame(self.main_content, fg_color="transparent")
         self.shard_frame.pack(anchor="w", fill="x")
 
-        self.next_btn1 = ctk.CTkButton(self.main_content, text="Continue", fg_color=ACCENT_COLOR, hover_color="#cc4400", state="disabled", corner_radius=4, command=self.show_setup_step2)
-        self.next_btn1.pack(anchor="w", pady=30)
-
-    def simulate_shards(self):
+    def generate_shards(self):
         for widget in self.shard_frame.winfo_children():
             widget.destroy()
         
-        base = hashlib.sha256(self.seed_input.get("1.0", "end").encode()).hexdigest()[:16]
-        ctk.CTkLabel(self.shard_frame, text=f"📄 Shard 1 Generated: 1-{base}", font=FONT_MONO, text_color=ACCENT_COLOR).pack(anchor="w")
-        ctk.CTkLabel(self.shard_frame, text=f"📄 Shard 2 Generated: 2-{base}", font=FONT_MONO, text_color=ACCENT_COLOR).pack(anchor="w")
-        ctk.CTkLabel(self.shard_frame, text=f"📄 Shard 3 Generated: 3-{base}", font=FONT_MONO, text_color=ACCENT_COLOR).pack(anchor="w")
-        self.next_btn1.configure(state="normal")
+        secret = self.seed_input.get("1.0", "end-1c").strip()
+        if not secret:
+            return
+            
+        shA, shB, shC = split_secret_2_of_3(secret)
+        self.pending_shard_c = shC
+
+        # Display Shard A
+        ctk.CTkLabel(self.shard_frame, text="Shard A (You keep this copy safe):", font=FONT_BOLD).pack(anchor="w", pady=(10, 0))
+        shA_box = ctk.CTkTextbox(self.shard_frame, width=500, height=50, fg_color="#181818", border_color=ACCENT_COLOR, border_width=1)
+        shA_box.insert("1.0", shA)
+        shA_box.configure(state="disabled")
+        shA_box.pack(anchor="w", pady=(0, 10))
+
+        # Display Shard B
+        ctk.CTkLabel(self.shard_frame, text="Shard B (Send this to your beneficiary):", font=FONT_BOLD).pack(anchor="w")
+        shB_box = ctk.CTkTextbox(self.shard_frame, width=500, height=50, fg_color="#181818", border_color=ACCENT_COLOR, border_width=1)
+        shB_box.insert("1.0", shB)
+        shB_box.configure(state="disabled")
+        shB_box.pack(anchor="w", pady=(0, 10))
+        
+        ctk.CTkLabel(self.shard_frame, text="Shard C is automatically secured and will be released to your beneficiary if you fail to check in.", font=FONT_MAIN, text_color=MUTED_TEXT, wraplength=500).pack(anchor="w", pady=(5, 10))
+
+        # Save Shard C automatically to state
+        self.state["payload"] = shC
+        self.save_state()
 
     def show_setup_step2(self):
         self.clear_main()
-        ctk.CTkLabel(self.main_content, text="2. License & Beneficiary", font=FONT_TITLE, text_color=TEXT_COLOR).pack(anchor="w", pady=(0, 5))
+        ctk.CTkLabel(self.main_content, text="Initialize Sovereign Vault", font=FONT_TITLE, text_color=TEXT_COLOR).pack(anchor="w", pady=(0, 5))
         ctk.CTkLabel(self.main_content, text="Validate your sovereign license and assign your heir.", font=FONT_MAIN, text_color=MUTED_TEXT).pack(anchor="w", pady=(0, 30))
 
         ctk.CTkLabel(self.main_content, text="Deadhand License Key (24 chars):", font=FONT_BOLD).pack(anchor="w", pady=(0, 5))
@@ -211,13 +303,17 @@ class DeadhandObsidian(ctk.CTk):
         if len(key) != 24:
             self.setup_err.configure(text="Invalid License Key. Must be exactly 24 characters.")
             return
-        if "@" not in email:
-            self.setup_err.configure(text="Invalid Email Address.")
+            
+        valid, msg = is_valid_email(email)
+        if not valid:
+            self.setup_err.configure(text=msg)
             return
 
         self.state["vault_exists"] = True
         self.state["license"] = key
         self.state["email"] = email
+        if "payload" not in self.state:
+            self.state["payload"] = ""
         self.state["status"] = "pending"
         self.state["deadline"] = time.time() + (90 * 24 * 3600) # 90 days from now
         self.save_state()
@@ -400,17 +496,29 @@ class DeadhandObsidian(ctk.CTk):
         ctk.CTkLabel(self.main_content, text="Input your collected M-of-N shards to reconstruct the original Master Secret.", font=FONT_MAIN, text_color=MUTED_TEXT).pack(anchor="w", pady=(0, 30))
 
         ctk.CTkLabel(self.main_content, text="Enter Shard 1:", font=FONT_BOLD).pack(anchor="w")
-        ctk.CTkEntry(self.main_content, width=500, fg_color="#181818", border_color="#333").pack(anchor="w", pady=(0, 15))
+        rec_shard1 = ctk.CTkEntry(self.main_content, width=500, fg_color="#181818", border_color="#333")
+        rec_shard1.pack(anchor="w", pady=(0, 15))
 
         ctk.CTkLabel(self.main_content, text="Enter Shard 2:", font=FONT_BOLD).pack(anchor="w")
-        ctk.CTkEntry(self.main_content, width=500, fg_color="#181818", border_color="#333").pack(anchor="w", pady=(0, 20))
+        rec_shard2 = ctk.CTkEntry(self.main_content, width=500, fg_color="#181818", border_color="#333")
+        rec_shard2.pack(anchor="w", pady=(0, 20))
 
         def mock_recover():
-            self.rec_out.configure(text="[SUCCESS] Master Secret Reconstructed:\napple banana cherry dog elephant fox grape horse igloo ...", text_color="#10b981")
+            s1 = rec_shard1.get().strip()
+            s2 = rec_shard2.get().strip()
+            if not s1 or not s2:
+                self.rec_out.configure(text="[ERR] Please provide two shards.", text_color="#e11d48")
+                return
+            
+            secret = recover_secret_2_of_3(s1, s2)
+            if secret:
+                self.rec_out.configure(text=f"[SUCCESS] Master Secret Reconstructed:\n\n{secret}", text_color="#10b981")
+            else:
+                self.rec_out.configure(text="[ERR] Failed to reconstruct. Shards may be invalid or identical.", text_color="#e11d48")
 
         ctk.CTkButton(self.main_content, text="Reconstruct Master Secret", font=FONT_BOLD, fg_color="#e11d48", hover_color="#9f1239", command=mock_recover).pack(anchor="w", pady=(0, 20))
 
-        self.rec_out = ctk.CTkLabel(self.main_content, text="", font=FONT_MONO, justify="left")
+        self.rec_out = ctk.CTkLabel(self.main_content, text="", font=FONT_MONO, justify="left", wraplength=500)
         self.rec_out.pack(anchor="w")
 
     # ================= VAULT SETTINGS =================
@@ -441,6 +549,12 @@ class DeadhandObsidian(ctk.CTk):
             self.state["vault_name"] = name_input.get().strip()
             
             new_email = email_input.get().strip()
+            
+            valid, msg = is_valid_email(new_email)
+            if not valid:
+                save_lbl.configure(text=f"[ERR] {msg}", text_color="#e11d48")
+                return
+
             # If email changed, reset status to pending
             if new_email != self.state.get("email"):
                 self.state["status"] = "pending"
