@@ -14,4 +14,3 @@ stripe
 resend
 posthog
 markdown
-orjson

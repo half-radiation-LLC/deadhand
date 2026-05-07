@@ -9,7 +9,7 @@ import os
 from dotenv import load_dotenv
 from fastapi import FastAPI, Request, Depends, Form, HTTPException, Response, BackgroundTasks
 import resend
-from fastapi.responses import HTMLResponse, RedirectResponse, FileResponse, ORJSONResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, FileResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.gzip import GZipMiddleware
@@ -103,8 +103,7 @@ posthog = Posthog(
 app = FastAPI(
     openapi_url=None, 
     docs_url=None, 
-    redoc_url=None,
-    default_response_class=ORJSONResponse
+    redoc_url=None
 )
 
 # Performance: Enable GZip
