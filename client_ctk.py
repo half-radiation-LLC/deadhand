@@ -471,11 +471,27 @@ class DeadhandObsidian(ctk.CTk):
             ratio = diff / total_seconds
             self.progress_bar.set(ratio)
             
-            # Change color to red if below 10%
-            if ratio < 0.1:
-                self.progress_bar.configure(progress_color="#e11d48")
+            # Color Lerping: Green -> Yellow -> Red
+            # Green: #10b981 (16, 185, 129)
+            # Yellow: #f59e0b (245, 158, 11)
+            # Red: #e11d48 (225, 29, 72)
+            
+            if ratio > 0.5:
+                # Lerp Green to Yellow
+                sub_ratio = (ratio - 0.5) * 2
+                r = int(245 + (16 - 245) * sub_ratio)
+                g = int(158 + (185 - 158) * sub_ratio)
+                b = int(11 + (129 - 11) * sub_ratio)
             else:
-                self.progress_bar.configure(progress_color=ACCENT_COLOR)
+                # Lerp Yellow to Red
+                sub_ratio = ratio * 2
+                r = int(225 + (245 - 225) * sub_ratio)
+                g = int(29 + (158 - 29) * sub_ratio)
+                b = int(72 + (11 - 72) * sub_ratio)
+            
+            hex_color = f"#{r:02x}{g:02x}{b:02x}"
+            self.progress_bar.configure(progress_color=hex_color)
+            self.timer_label.configure(text_color=hex_color)
 
             days = int(diff // (24 * 3600))
             hours = int((diff % (24 * 3600)) // 3600)

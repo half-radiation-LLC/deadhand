@@ -1,1 +1,1 @@
-{"vault_exists": false, "vault_name": "My Vault", "license": "", "email": "", "status": "pending", "deadline": 0}
+{"vault_exists": true, "vault_name": "My Vault", "license": "hMPKZcnpoJ4GN5Fkv3m16VAY", "email": "ae@ea.com", "status": "pending", "deadline": 1786211640.5190296, "payload": "shC-Mzqk9XPV/U/WNODisUJBVoszR3wxOseCf9B4b30QjuLRwz8af70U", "shard_a": "shA-MTrHgn/QeG99EI7i0cM/Gn+9FHwyOgcTaGHhRM9ACmQE5RookOo3", "shard_b": "shB-MjoHE2hh4UTPQApkBOUaKJDqN3wzOqT1c9X9T9Y04OKxQkFWizNH"}
