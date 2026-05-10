@@ -244,8 +244,8 @@ class DeadhandObsidian(ctk.CTk):
         # Back Button
         ctk.CTkButton(self.main_content, text="← Back", font=("Geist", 11), fg_color="transparent", text_color=MUTED_TEXT, hover_color="#222", width=60, command=self.show_setup_intro).pack(anchor="w", pady=(0, 20))
 
-        ctk.CTkLabel(self.main_content, text="Division of Sovereign Seed", font=FONT_TITLE, text_color=TEXT_COLOR).pack(anchor="w", pady=(0, 5))
-        ctk.CTkLabel(self.main_content, text="Enter your 12 or 24-word seed phrase. We will split it into 3 cryptographic shards.", font=FONT_MAIN, text_color=MUTED_TEXT).pack(anchor="w", pady=(0, 20))
+        ctk.CTkLabel(self.main_content, text="Sovereign Secret Division", font=FONT_TITLE, text_color=TEXT_COLOR).pack(anchor="w", pady=(0, 5))
+        ctk.CTkLabel(self.main_content, text="Enter the secret you want the beneficiary to know (Seed phrase, location, etc.). We will split it into 3 cryptographic shards.", font=FONT_MAIN, text_color=MUTED_TEXT, wraplength=500, justify="left").pack(anchor="w", pady=(0, 20))
 
         self.setup_seed_input = ctk.CTkTextbox(self.main_content, width=500, height=100, fg_color="#181818", border_color="#333", border_width=1)
         self.setup_seed_input.pack(anchor="w", pady=(0, 20))
@@ -291,7 +291,7 @@ class DeadhandObsidian(ctk.CTk):
     def show_shard_generator_view(self):
         self.clear_main()
         ctk.CTkLabel(self.main_content, text="My Shards", font=FONT_TITLE, text_color=TEXT_COLOR).pack(anchor="w", pady=(0, 5))
-        ctk.CTkLabel(self.main_content, text="Generate your 2-of-3 Shamir's Secret Sharing shards. Deadhand securely stores Shard C.", font=FONT_MAIN, text_color=MUTED_TEXT).pack(anchor="w", pady=(0, 20))
+        ctk.CTkLabel(self.main_content, text="Enter secret you want the beneficiary to know / seed phrase. Deadhand securely stores Shard C.", font=FONT_MAIN, text_color=MUTED_TEXT, wraplength=500, justify="left").pack(anchor="w", pady=(0, 20))
 
         self.seed_input = ctk.CTkTextbox(self.main_content, width=500, height=100, fg_color="#181818", border_color="#333", border_width=1)
         self.seed_input.pack(anchor="w", pady=(0, 20))
