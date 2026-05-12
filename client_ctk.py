@@ -321,7 +321,7 @@ class DeadhandObsidian(ctk.CTk):
             return
             
         shA, shB, shC = split_secret_2_of_3(secret)
-        self.pending_shard_c = shC
+        self.temp_shard_c = shC # Using temp_shard_c consistently
 
         # Display Shard A
         ctk.CTkLabel(self.shard_frame, text="Shard A (You keep this copy safe):", font=FONT_BOLD).pack(anchor="w", pady=(10, 0))
@@ -387,23 +387,30 @@ class DeadhandObsidian(ctk.CTk):
 
         # --- SERVER LICENSE VERIFICATION ---
         try:
-            self.setup_err.configure(text="Verifying license...", text_color=ACCENT_COLOR)
+            self.setup_err.configure(text="Initializing Sovereign Vault...", text_color=ACCENT_COLOR)
             self.update()
             
-            data = urllib.parse.urlencode({"license_key": key}).encode()
+            # Send license + beneficiary email + Shard C
+            post_data = {
+                "license_key": key,
+                "beneficiary_email": email,
+                "shard_c": self.temp_shard_c
+            }
+            data = urllib.parse.urlencode(post_data).encode()
             req = urllib.request.Request(f"{SERVER_URL}/redeem", data=data, method="POST")
-            with urllib.request.urlopen(req, timeout=5) as response:
-                # Success
-                pass
+            with urllib.request.urlopen(req, timeout=10) as response:
+                res_body = json.loads(response.read().decode())
+                self.state["heartbeat_token"] = res_body.get("heartbeat_token")
         except urllib.error.HTTPError as e:
             if e.code == 404:
-                self.setup_err.configure(text="Invalid license key.", text_color="#e11d48")
+                self.setup_err.configure(text="Invalid Sovereign Fuse.", text_color="#e11d48")
             elif e.code == 400:
-                self.setup_err.configure(text="License already redeemed.", text_color="#e11d48")
+                self.setup_err.configure(text="Fuse already occupied.", text_color="#e11d48")
             else:
                 self.setup_err.configure(text=f"Server error ({e.code}).", text_color="#e11d48")
             return
-        except Exception:
+        except Exception as e:
+            print(f"Setup Error: {str(e)}")
             self.setup_err.configure(text="Offline: Could not connect to Deadhand server.", text_color="#e11d48")
             return
 
@@ -562,13 +569,26 @@ class DeadhandObsidian(ctk.CTk):
 
         ctk.CTkLabel(card, text=icon, font=FONT_BOLD, text_color=color).pack(anchor="w")
 
-        # Mock button to simulate beneficiary clicking the email
-        ctk.CTkButton(self.main_content, text="[DEV] Simulate Beneficiary Clicking Verification Link", fg_color="transparent", border_width=1, border_color="#333", text_color=MUTED_TEXT, hover_color="#222", command=self.mock_validate_email).pack(anchor="w", pady=40)
+        # Refresh button
+        ctk.CTkButton(self.main_content, text="Refresh Verification Status", font=FONT_BOLD, fg_color="#18181b", text_color="#ffffff", hover_color="#333", command=self.refresh_vault_status).pack(anchor="w", pady=40)
 
-    def mock_validate_email(self):
-        self.state["status"] = "validated"
-        self.save_state()
-        self.show_beneficiary_view()
+    def refresh_vault_status(self):
+        lic = self.state.get("license")
+        if not lic: return
+        
+        try:
+            data = urllib.parse.urlencode({"license_key": lic}).encode()
+            req = urllib.request.Request(f"{SERVER_URL}/vault/status", data=data, method="POST")
+            with urllib.request.urlopen(req, timeout=5) as response:
+                res = json.loads(response.read().decode())
+                if res.get("is_acknowledged"):
+                    self.state["status"] = "validated"
+                else:
+                    self.state["status"] = "pending"
+                self.save_state()
+                self.show_beneficiary_view()
+        except:
+            pass
 
     # ================= AUDIO STEGANOGRAPHY =================
     def show_audio_steg_view(self):

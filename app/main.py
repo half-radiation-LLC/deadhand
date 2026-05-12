@@ -1,12 +1,24 @@
 # SPDX-License-Identifier: AGPL-3.0
 # Copyright (c) 2026 half radiation LLC. All rights reserved.
 
-import secrets
-import hmac
-import hashlib
 import re
+import secrets
+import random
+import csv
+import hashlib
+from datetime import datetime, timedelta
+from pathlib import Path
+from typing import List, Optional
 import os
 from dotenv import load_dotenv
+
+# x402 Paywall Imports
+from x402.http import FacilitatorConfig, HTTPFacilitatorClient, PaymentOption
+from x402.http.middleware.fastapi import PaymentMiddlewareASGI
+from x402.http.types import HTTPRequestContext, RouteConfig
+from x402.mechanisms.evm.exact import ExactEvmServerScheme
+from x402.schemas import Network
+from x402.server import x402ResourceServer
 from fastapi import FastAPI, Request, Depends, Form, HTTPException, Response, BackgroundTasks
 import resend
 from fastapi.responses import HTMLResponse, RedirectResponse, FileResponse
@@ -16,14 +28,10 @@ from fastapi.middleware.gzip import GZipMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
 from fastapi import status
 from sqlalchemy.orm import Session
-from datetime import datetime, timedelta
 import markdown
-from pathlib import Path
 import stripe
 from urllib.parse import quote_plus
-import csv
 import io
-import random
 from posthog import Posthog
 
 from email.utils import formatdate
@@ -88,6 +96,57 @@ from app.crypto import encrypt_shard, decrypt_shard, encrypt_token, decrypt_toke
 # Create database tables
 Base.metadata.create_all(bind=engine)
 
+# x402 Sovereign Paywall Config
+EVM_ADDRESS = os.getenv("EVM_ADDRESS", "0xd5ae61e166eae35fb80bf55c8db78ab04359f505")
+EVM_NETWORK: Network = "eip155:8453" # Base Mainnet
+FACILITATOR_URL = os.getenv("FACILITATOR_URL", "https://facilitator.payai.network")
+
+facilitator = HTTPFacilitatorClient(FacilitatorConfig(url=FACILITATOR_URL))
+x402_server = x402ResourceServer(facilitator)
+x402_server.register(EVM_NETWORK, ExactEvmServerScheme())
+
+TIER_2_COUNTRIES = ['CL', 'BR', 'MX', 'AR', 'CO', 'PE', 'ZA', 'TR', 'RU', 'CN', 'TH', 'MY', 'PL', 'RO', 'HU']
+TIER_3_COUNTRIES = ['IN', 'PK', 'BD', 'NG', 'KE', 'VN', 'ID', 'PH', 'EG', 'DZ', 'MA', 'VE', 'LK']
+
+def get_sovereign_price(context: HTTPRequestContext) -> str:
+    # Detect country from header (set by Cloudflare or similar) or query param
+    country = context.adapter.get_header("cf-ipcountry") or context.adapter.get_query_param("country") or "US"
+    if isinstance(country, list): country = country[0] if country else "US"
+    country = country.upper()
+    
+    if country in TIER_3_COUNTRIES:
+        return "$100"
+    elif country in TIER_2_COUNTRIES:
+        return "$200"
+    return "$300"
+
+x402_routes = {
+    "GET /checkout": RouteConfig(
+        accepts=[
+            PaymentOption(
+                scheme="exact",
+                pay_to=EVM_ADDRESS,
+                price=get_sovereign_price,
+                network=EVM_NETWORK,
+            )
+        ],
+        mime_type="text/html",
+        description="Sovereign Access Activation",
+    ),
+    "POST /checkout/generate": RouteConfig(
+        accepts=[
+            PaymentOption(
+                scheme="exact",
+                pay_to=EVM_ADDRESS,
+                price=get_sovereign_price,
+                network=EVM_NETWORK,
+            )
+        ],
+        mime_type="application/json",
+        description="Sovereign Fuse Generation",
+    )
+}
+
 # Stripe Configuration Removed
 BASE_URL = os.getenv("BASE_URL", "https://deadhandprotocol.com")
 DISCORD_WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL")  # For purchase notifications
@@ -105,6 +164,9 @@ app = FastAPI(
     docs_url=None, 
     redoc_url=None
 )
+
+# Add x402 Paywall Middleware
+app.add_middleware(PaymentMiddlewareASGI, routes=x402_routes, server=x402_server)
 
 # Performance: Enable GZip
 app.add_middleware(GZipMiddleware, minimum_size=1000)
@@ -426,24 +488,97 @@ async def generate_license(db: Session = Depends(get_db)):
     return {"license_key": formatted}
 
 @app.post("/redeem")
-async def redeem_license(license_key: str = Form(...), db: Session = Depends(get_db)):
-    """Verify and consume a license key from the desktop client"""
+async def redeem_license(
+    license_key: str = Form(...), 
+    beneficiary_email: str = Form(...),
+    shard_c: str = Form(...),
+    db: Session = Depends(get_db)
+):
+    """Verify and consume a license key, and initialize the vault record"""
     h_key = hash_license(license_key)
-    
     db_lic = db.query(License).filter(License.license_key == h_key).first()
     
     if not db_lic:
         raise HTTPException(status_code=404, detail="Invalid license key.")
-    
     if db_lic.is_redeemed:
-        raise HTTPException(status_code=400, detail="License has already been used.")
+        raise HTTPException(status_code=400, detail="License already used.")
+
+    # Create User record (The Vault)
+    heartbeat_token = secrets.token_urlsafe(32)
+    ack_token = secrets.token_urlsafe(32)
     
-    # Mark as used
+    user = User(
+        email=f"vault_{h_key[:8]}@deadhand.protocol",
+        beneficiary_email=beneficiary_email,
+        shard_c=shard_c,
+        heartbeat_token=heartbeat_token,
+        acknowledgment_token=ack_token,
+        is_acknowledged=False
+    )
+    db.add(user)
+    db.flush()
+    
+    # Mark as used and link to user
     db_lic.is_redeemed = True
     db_lic.redeemed_at = datetime.now()
+    db_lic.user_id = user.id
     db.commit()
     
-    return {"status": "success"}
+    # Send verification email to beneficiary
+    ack_url = f"{BASE_URL}/acknowledge/{ack_token}"
+    subject = "ACTION REQUIRED: You have been named a Deadhand Beneficiary"
+    content = f"""
+    <div style="font-family: sans-serif; background: #000; color: #fff; padding: 40px; border: 1px solid #ff5500;">
+        <h2 style="color: #ff5500;">SOVEREIGN DUTY ASSIGNED</h2>
+        <p>You have been named as a beneficiary for a Deadhand Protocol vault.</p>
+        <p>This means if the vault owner goes silent, you will be the one responsible for recovering their digital assets.</p>
+        <p>Please click the button below to acknowledge receipt of this responsibility. The owner will not see their vault as 'Active' until you do.</p>
+        <div style="margin: 40px 0;">
+            <a href="{ack_url}" style="background: #ff5500; color: #fff; padding: 15px 30px; text-decoration: none; border-radius: 4px; font-weight: bold;">ACKNOWLEDGE RESPONSIBILITY</a>
+        </div>
+        <p style="color: #666; font-size: 12px;">Deadhand is a secondary safety net. Trust math, not men.</p>
+    </div>
+    """
+    send_email(beneficiary_email, subject, content)
+    
+    return {"status": "success", "heartbeat_token": heartbeat_token}
+
+@app.get("/acknowledge/{token}", response_class=HTMLResponse)
+async def acknowledge_beneficiary(token: str, db: Session = Depends(get_db)):
+    """Beneficiary clicks the email link to confirm receipt"""
+    user = db.query(User).filter(User.acknowledgment_token == token).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Invalid or expired token.")
+    
+    user.is_acknowledged = True
+    db.commit()
+    
+    return """
+    <html>
+        <body style="background: #000; color: #fff; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; text-align: center;">
+            <div style="border: 1px solid #ff5500; padding: 60px; border-radius: 12px;">
+                <h1 style="color: #ff5500;">ACKNOWLEDGMENT COMPLETE</h1>
+                <p>You have accepted your role as a sovereign beneficiary.</p>
+                <p>The vault owner has been notified. No further action is required from you until the fuse elapses.</p>
+            </div>
+        </body>
+    </html>
+    """
+
+@app.post("/vault/status")
+async def get_vault_status(license_key: str = Form(...), db: Session = Depends(get_db)):
+    """Check if the beneficiary has acknowledged the duty"""
+    h_key = hash_license(license_key)
+    db_lic = db.query(License).filter(License.license_key == h_key).first()
+    
+    if not db_lic or not db_lic.user_id:
+        raise HTTPException(status_code=404, detail="Vault not found.")
+        
+    user = db.query(User).get(db_lic.user_id)
+    return {
+        "is_acknowledged": user.is_acknowledged,
+        "is_active": user.is_active
+    }
 
 @app.post("/release")
 async def release_license(license_key: str = Form(...), db: Session = Depends(get_db)):

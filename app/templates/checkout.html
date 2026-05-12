@@ -130,52 +130,8 @@
 </style>
 
 <div class="checkout-wrapper">
-    <!-- STEP 1: Payment -->
-    <div class="payment-card" id="step1">
-        <h2>Payment Required</h2>
-        <p class="payment-subtitle">Access to Sovereign Desktop Client. To access this content and generate your
-            account, please pay $300.00 USDC.</p>
-
-        <a href="#" class="payment-link">Need USDC on Base? Get some here.</a>
-
-        <button class="btn-disconnect">Disconnect</button>
-
-        <div class="info-box">
-            <div class="info-row">
-                <span class="info-label">Wallet:</span>
-                <span class="info-value">0xfC3F...caBf</span>
-            </div>
-            <div class="info-row">
-                <span class="info-label">Available balance:</span>
-                <span class="info-value">••••• USDC</span>
-            </div>
-            <div class="info-row">
-                <span class="info-label">Amount:</span>
-                <span class="info-value">$300.00 USDC</span>
-            </div>
-            <div class="info-row">
-                <span class="info-label">Network:</span>
-                <span class="info-value">Base</span>
-            </div>
-        </div>
-
-        <div style="text-align: left; margin-bottom: 24px; display: flex; gap: 12px; align-items: flex-start;">
-            <input type="checkbox" id="tos-checkbox"
-                style="margin-top: 4px; accent-color: var(--accent); width: 16px; height: 16px; cursor: pointer;">
-            <label for="tos-checkbox"
-                style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; cursor: pointer;">
-                I explicitly acknowledge the <a href="/terms" style="color: var(--accent); text-decoration: underline;"
-                    target="_blank">Terms of Service</a>. I understand this software is provided "AS IS", limits
-                liability to $300, and assumes ZERO liability for lost digital assets.
-            </label>
-        </div>
-
-        <button class="btn-pay" id="payBtn" onclick="simulatePayment()" disabled
-            style="opacity: 0.5; cursor: not-allowed;">Pay now</button>
-    </div>
-
-    <!-- STEP 2: Generation (Hidden initially) -->
-    <div class="payment-card" id="step2" style="display: none; max-width: 600px;">
+    <!-- The paywall will show as a pre-hook. This content only shows after payment. -->
+    <div class="payment-card" id="step2" style="max-width: 600px;">
         <h2 style="margin-bottom: 10px; color: #10b981;">Payment Confirmed</h2>
         <p style="color: var(--text-secondary); margin-bottom: 20px;">Transaction verified on Base network. Your
             Sovereign Account has been provisioned.</p>
@@ -184,71 +140,44 @@
         <p style="color: #e11d48; font-weight: bold; font-size: 0.9rem;">WRITE THIS DOWN. IF YOU LOSE THIS, YOU LOSE
             YOUR ACCOUNT FOREVER.</p>
 
-        <div class="key-display" id="keyOutput"></div>
+        <div class="key-display" id="keyOutput">Generating...</div>
 
         <p style="color: var(--text-secondary); margin-bottom: 30px; line-height: 1.6;">Use this key inside the desktop
             client to unlock all advanced features.</p>
 
         <a href="/download" class="btn-pay"
-            style="text-decoration: none; display: block; background: #10b981; margin-top: 10px;">Download Client</a>
+            style="text-decoration: none; display: block; background: #10b981; margin-top: 10px; text-align: center;">Download Client</a>
     </div>
 </div>
 
+<script src="https://facilitator.payai.network/x402.js"></script>
 <script>
-    const tosCheckbox = document.getElementById('tos-checkbox');
-    const payBtn = document.getElementById('payBtn');
-
-    tosCheckbox.addEventListener('change', (e) => {
-        if (e.target.checked) {
-            payBtn.disabled = false;
-            payBtn.style.opacity = '1';
-            payBtn.style.cursor = 'pointer';
-        } else {
-            payBtn.disabled = true;
-            payBtn.style.opacity = '0.5';
-            payBtn.style.cursor = 'not-allowed';
-        }
-    });
-
-    async function simulatePayment() {
-        if (!tosCheckbox.checked) return;
-
-        payBtn.innerText = 'Processing...';
-        payBtn.style.opacity = '0.7';
-        payBtn.disabled = true;
-
+    async function generateKey() {
+        const keyOutput = document.getElementById('keyOutput');
         try {
-            // Call real server to generate and store the license
             const response = await fetch('/checkout/generate', { 
                 method: 'POST',
                 headers: { 'Accept': 'application/json' }
             });
             
             if (!response.ok) {
-                const errorData = await response.text();
-                console.error("Server Error:", response.status, errorData);
-                alert(`Server error (${response.status}). Please try again or check logs.`);
-                payBtn.innerText = 'Pay now';
-                payBtn.disabled = false;
+                keyOutput.innerText = "Error generating key. Refresh page.";
+                keyOutput.style.color = "#e11d48";
                 return;
             }
 
             const data = await response.json();
             if (data.license_key) {
-                document.getElementById('keyOutput').innerText = data.license_key;
-                document.getElementById('step1').style.display = 'none';
-                document.getElementById('step2').style.display = 'block';
+                keyOutput.innerText = data.license_key;
             } else {
-                alert("Internal error: License key was not returned.");
-                payBtn.innerText = 'Pay now';
-                payBtn.disabled = false;
+                keyOutput.innerText = "Internal error.";
             }
         } catch (err) {
-            console.error("Fetch Error:", err);
-            alert("Connection error: The server might be timing out or the database is unreachable. Check your Vercel logs.");
-            payBtn.innerText = 'Pay now';
-            payBtn.disabled = false;
+            keyOutput.innerText = "Connection error.";
         }
     }
+
+    // Since this page is protected by x402, we only get here after payment.
+    window.addEventListener('DOMContentLoaded', generateKey);
 </script>
 {% endblock %}

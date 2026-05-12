@@ -23,6 +23,10 @@ class User(Base):
     is_dead = Column(Boolean, default=False)
     heartbeat_token = Column(String)  # Simple token for authentication via email link
     
+    # Beneficiary acknowledgment
+    is_acknowledged = Column(Boolean, default=False)
+    acknowledgment_token = Column(String, unique=True, index=True)
+    
     # Stripe subscription tracking
     stripe_customer_id = Column(String, nullable=True, index=True)  # cus_xxx
     stripe_subscription_id = Column(String, nullable=True, index=True)  # sub_xxx (for annual)
