@@ -218,14 +218,16 @@
 
     <style>
         :root {
-            --bg-primary: #000000;
-            --bg-secondary: #0a0a0a;
-            --bg-tertiary: #111111;
-            --text-primary: #ffffff;
-            --text-secondary: #a1a1a1;
-            --accent: #FF5500;
-            --border: #1a1a1a;
+            --bg-primary: #020617; /* Deep Space Slate */
+            --bg-secondary: #0f172a; /* Slate 900 */
+            --bg-tertiary: #1e293b; /* Slate 800 */
+            --text-primary: #f8fafc; /* Platinum White */
+            --text-secondary: #94a3b8; /* Slate 400 */
+            --accent: #0ea5e9; /* Aerospace Sky Blue */
+            --accent-glow: rgba(14, 165, 233, 0.2);
+            --border: #1e293b;
             --font-main: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            --font-heading: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
 
         * {
@@ -251,55 +253,52 @@
         }
 
         /* Typography */
-        h1,
-        h2,
-        h3 {
-            font-weight: 700;
+        h1, h2, h3, h4 {
+            font-family: var(--font-heading);
+            font-weight: 500;
+            line-height: 1.2;
             letter-spacing: -0.02em;
-            line-height: 1.1;
+            color: var(--text-primary);
         }
 
-        h1 {
-            font-size: clamp(2.5rem, 8vw, 4.5rem);
-            margin-bottom: 24px;
-        }
-
-        h2 {
-            font-size: clamp(2rem, 5vw, 3rem);
-            margin-bottom: 20px;
-        }
+        h1 { font-size: clamp(2.5rem, 5vw, 4rem); font-weight: 600; letter-spacing: -0.04em; }
+        h2 { font-size: clamp(2rem, 4vw, 3rem); font-weight: 500; }
+        h3 { font-size: clamp(1.5rem, 3vw, 2rem); }
 
         p {
+            font-size: 1.125rem;
             color: var(--text-secondary);
-            margin-bottom: 1.5rem;
-            font-size: 1.1rem;
+            font-weight: 300;
+            line-height: 1.7;
         }
 
         a {
             color: var(--accent);
             text-decoration: none;
-            transition: opacity 0.2s;
+            transition: all 0.3s ease;
         }
 
-        a:hover {
-            opacity: 0.8;
-        }
-
-        /* Navigation */
-        .header {
-            position: sticky;
-            top: 0;
-            background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid var(--border);
-            z-index: 1000;
-            padding: 20px 0;
-        }
-
+        /* Nav */
         .nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 20px 0;
+            background: rgba(2, 6, 23, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(30, 41, 59, 0.5);
+            z-index: 1000;
+        }
+
+        .nav-inner {
             display: flex;
             align-items: center;
             gap: 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
         }
 
         .nav-link {
@@ -314,42 +313,74 @@
         }
 
         .btn-primary {
-            background: var(--accent);
-            color: white;
-            padding: 14px 28px;
-            border-radius: 100px;
-            font-weight: 600;
-            font-size: 0.95rem;
-            transition: transform 0.2s, box-shadow 0.2s;
             display: inline-flex;
             align-items: center;
-            gap: 8px;
+            padding: 16px 32px;
+            background: var(--text-primary);
+            color: var(--bg-primary);
+            border-radius: 4px;
+            font-weight: 500;
+            font-size: 1rem;
+            letter-spacing: 0.02em;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
         }
 
         .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(255, 85, 0, 0.3);
-            opacity: 1;
+            background: transparent;
+            color: var(--text-primary);
+            border-color: var(--text-primary);
+            box-shadow: 0 0 20px rgba(248, 250, 252, 0.1);
         }
 
-        /* Hero */
-        .hero {
-            padding: 120px 0 80px;
+        .btn-secondary {
+            display: inline-flex;
+            align-items: center;
+            padding: 16px 32px;
+            background: transparent;
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-weight: 500;
+            font-size: 1rem;
+            letter-spacing: 0.02em;
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--text-secondary);
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        /* Math Hero */
+        .math-hero {
+            padding: 180px 0 100px;
             text-align: center;
             position: relative;
+            overflow: hidden;
+            background: radial-gradient(circle at 50% 0%, rgba(14, 165, 233, 0.08), transparent 50%);
         }
 
         .hero-badge {
-            background: rgba(255, 85, 0, 0.1);
-            color: var(--accent);
+            display: inline-block;
             padding: 6px 16px;
+            background: rgba(14, 165, 233, 0.1);
+            color: var(--accent);
+            border: 1px solid rgba(14, 165, 233, 0.2);
             border-radius: 100px;
             font-size: 0.85rem;
-            font-weight: 600;
-            margin-bottom: 32px;
-            display: inline-block;
-            text-transform: uppercase;
+            font-weight: 500;
             letter-spacing: 0.05em;
+            text-transform: uppercase;
+            margin-bottom: 24px;
+        }
+
+        .math-hero h1 {
+            max-width: 900px;
+            margin: 0 auto 30px;
+            background: linear-gradient(180deg, #ffffff 0%, #94a3b8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
         .hero-image {
@@ -672,15 +703,15 @@
     <div id="vpnBanner" style="display: none; background: #e11d48; color: white; text-align: center; padding: 15px; font-weight: bold; position: sticky; top: 0; z-index: 2000;">
         ⚠️ please disable your vpn. standard pricing applied.
     </div>
-    <header class="header">
-        <div class="container" style="display: flex; justify-content: space-between; align-items: center;">
-            <a href="/" style="display: flex; align-items: center; gap: 12px;">
-                <img src="/static/favicon.png" alt="Deadhand Logo" style="height: 32px;">
+    <header class="nav">
+        <div class="nav-inner">
+            <a href="/" style="display: flex; align-items: center; gap: 12px; margin-right: auto;">
+                <img src="/static/favicon.png" alt="Deadhand Logo" style="height: 32px; filter: grayscale(100%) brightness(200%);">
                 <span
-                    style="font-weight: 800; font-size: 1.25rem; color: white; letter-spacing: -0.05em;">DEADHAND</span>
+                    style="font-weight: 600; font-size: 1.25rem; color: white; letter-spacing: 0.1em; text-transform: uppercase;">DEADHAND</span>
             </a>
 
-            <nav class="nav-desktop nav">
+            <nav class="nav-desktop" style="display: flex; gap: 32px; align-items: center;">
                 <a href="/tools/bus-factor" class="nav-link">Risk Calculator</a>
                 <a href="/download" class="nav-link">Sovereign Client</a>
                 <a href="/whitepaper" class="nav-link">Protocol</a>
@@ -696,19 +727,19 @@
             <div class="container">
                 <div class="hero-grid">
                     <div>
-                        <div class="hero-badge" style="margin-left: 0;">Outsmart The System</div>
-                        <h1 id="hero-headline" style="font-size: clamp(3rem, 4.5vw, 4.5rem); text-align: left; line-height: 1.1;">Take your keys to the grave.<br><span class="accent-text">Leave the wealth.</span></h1>
-                        <p id="hero-subtext" style="font-size: 1.15rem; font-weight: 500; margin-bottom: 40px; line-height: 1.6; color: var(--text-secondary);">
-                            You spent your life bypassing the fiat system. Don't let probate courts steal it when you die. Deadhand ensures your family gets everything, the state gets nothing, and you never have to explain a seed phrase to your spouse.
+                        <div class="hero-badge" style="margin-left: 0;">Institutional Digital Succession</div>
+                        <h1 id="hero-headline" style="font-size: clamp(3rem, 4.5vw, 4.5rem); text-align: left; line-height: 1.1;">Cryptographic certainty.<br><span class="accent-text" style="color: var(--text-secondary); font-weight: 400;">Generational wealth.</span></h1>
+                        <p id="hero-subtext" style="font-size: 1.15rem; font-weight: 400; margin-bottom: 40px; line-height: 1.6; color: var(--text-secondary);">
+                            Deadhand Protocol provides trustless, mathematical succession planning for high-net-worth digital portfolios. Eliminate probate risk, ensure seamless transfer to beneficiaries, and maintain absolute sovereignty over your assets.
                         </p>
                         <div class="hero-buttons">
-                            <a id="hero-cta" href="/download" class="btn-primary">Bypass The State</a>
-                            <a href="#problem" style="color: white; font-weight: 600; padding: 14px 28px; border: 1px solid var(--border); border-radius: 100px;">See How It Works</a>
+                            <a id="hero-cta" href="/activate" class="btn-primary">Secure Your Legacy</a>
+                            <a href="#problem" class="btn-secondary">Read The Protocol</a>
                         </div>
                     </div>
                     <div style="position: relative;">
-                        <img src="/static/images/hero_art.png" alt="Abstract Monet Style Vault" style="width: 100%; height: auto; border-radius: 20px; box-shadow: 0 30px 60px rgba(0,0,0,0.5); border: 1px solid var(--border);">
-                        <div style="position: absolute; inset: 0; background: linear-gradient(45deg, rgba(255,85,0,0.1) 0%, rgba(0,0,0,0) 100%); border-radius: 20px; pointer-events: none;"></div>
+                        <img src="/static/images/hero_art.png" alt="Abstract Monet Style Vault" style="width: 100%; height: auto; border-radius: 8px; box-shadow: 0 30px 60px rgba(0,0,0,0.5); border: 1px solid var(--border);">
+                        <div style="position: absolute; inset: 0; background: linear-gradient(45deg, rgba(14, 165, 233, 0.1) 0%, rgba(0,0,0,0) 100%); border-radius: 8px; pointer-events: none;"></div>
                     </div>
                 </div>
             </div>

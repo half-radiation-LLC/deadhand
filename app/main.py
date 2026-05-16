@@ -459,10 +459,15 @@ async def landing_page(request: Request):
         context={"csrf_token": getattr(request.state, "csrf_token", "")}
     )
 
+@app.get("/activate", response_class=HTMLResponse)
+async def activate_page(request: Request):
+    """Liability waiver before checkout"""
+    return templates.TemplateResponse(request=request, name="activate.html", context={})
+
 @app.get("/buy")
 async def buy_chooser(request: Request):
-    """Redirect to landing or handle desktop app download"""
-    return RedirectResponse(url="/checkout")
+    """Redirect to activation or handle desktop app download"""
+    return RedirectResponse(url="/activate")
 
 @app.get("/checkout", response_class=HTMLResponse)
 async def checkout_page(request: Request):
@@ -526,17 +531,28 @@ async def redeem_license(
     
     # Send verification email to beneficiary
     ack_url = f"{BASE_URL}/acknowledge/{ack_token}"
-    subject = "ACTION REQUIRED: You have been named a Deadhand Beneficiary"
+    subject = "A message of trust: You've been named a Deadhand Beneficiary"
     content = f"""
-    <div style="font-family: sans-serif; background: #000; color: #fff; padding: 40px; border: 1px solid #ff5500;">
-        <h2 style="color: #ff5500;">SOVEREIGN DUTY ASSIGNED</h2>
-        <p>You have been named as a beneficiary for a Deadhand Protocol vault.</p>
-        <p>This means if the vault owner goes silent, you will be the one responsible for recovering their digital assets.</p>
-        <p>Please click the button below to acknowledge receipt of this responsibility. The owner will not see their vault as 'Active' until you do.</p>
-        <div style="margin: 40px 0;">
-            <a href="{ack_url}" style="background: #ff5500; color: #fff; padding: 15px 30px; text-decoration: none; border-radius: 4px; font-weight: bold;">ACKNOWLEDGE RESPONSIBILITY</a>
+    <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff; color: #333333; padding: 40px; border-radius: 8px; border: 1px solid #eaeaec;">
+        <h2 style="color: #1a1a1a; font-weight: 300; font-size: 24px; margin-bottom: 20px;">An act of profound trust.</h2>
+        
+        <p style="font-size: 16px; line-height: 1.6; color: #4a4a4a;">Hello,</p>
+        
+        <p style="font-size: 16px; line-height: 1.6; color: #4a4a4a;">Someone who cares deeply about you has taken steps to protect their legacy and has chosen you as their trusted beneficiary through the Deadhand Protocol.</p>
+        
+        <p style="font-size: 16px; line-height: 1.6; color: #4a4a4a;"><strong>What does this mean?</strong></p>
+        <p style="font-size: 16px; line-height: 1.6; color: #4a4a4a;">There is absolutely nothing you need to do today. This is simply a safety net. If the person who set this up is ever unable to access their accounts for an extended period, you will securely receive the information needed to recover their digital assets for your family.</p>
+        
+        <p style="font-size: 16px; line-height: 1.6; color: #4a4a4a;">To give them peace of mind that you've received this message, please take a brief moment to acknowledge this responsibility:</p>
+        
+        <div style="margin: 35px 0; text-align: center;">
+            <a href="{ack_url}" style="background: #2b6cb0; color: #ffffff; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: 500; font-size: 16px; display: inline-block;">Accept this Trust</a>
         </div>
-        <p style="color: #666; font-size: 12px;">Deadhand is a secondary safety net. Trust math, not men.</p>
+        
+        <p style="font-size: 16px; line-height: 1.6; color: #4a4a4a;">With care,<br>The Deadhand Team</p>
+        
+        <hr style="border: none; border-top: 1px solid #eaeaec; margin: 30px 0;">
+        <p style="color: #888888; font-size: 12px; line-height: 1.5;">This message was generated automatically because a user designated this email address. We do not track your location or personal data.</p>
     </div>
     """
     send_email(beneficiary_email, subject, content)
@@ -555,11 +571,12 @@ async def acknowledge_beneficiary(token: str, db: Session = Depends(get_db)):
     
     return """
     <html>
-        <body style="background: #000; color: #fff; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; text-align: center;">
-            <div style="border: 1px solid #ff5500; padding: 60px; border-radius: 12px;">
-                <h1 style="color: #ff5500;">ACKNOWLEDGMENT COMPLETE</h1>
-                <p>You have accepted your role as a sovereign beneficiary.</p>
-                <p>The vault owner has been notified. No further action is required from you until the fuse elapses.</p>
+        <body style="background: #f7fafc; color: #333; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0;">
+            <div style="background: #ffffff; padding: 50px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); max-width: 500px; text-align: center;">
+                <div style="color: #48bb78; font-size: 48px; margin-bottom: 20px;">✓</div>
+                <h1 style="color: #2d3748; font-weight: 300; margin-top: 0;">Thank you.</h1>
+                <p style="color: #4a5568; line-height: 1.6; font-size: 16px;">You have successfully acknowledged your role.</p>
+                <p style="color: #4a5568; line-height: 1.6; font-size: 16px;">We have notified the vault owner, bringing them peace of mind. There is nothing else you need to do right now. We hope you never hear from us again, but if you do, we'll be here to guide you.</p>
             </div>
         </body>
     </html>

@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+
+{% block title %}Protocol Activation | Deadhand{% endblock %}
+
+{% block content %}
+<style>
+    .activate-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 80vh;
+        padding: 40px 20px;
+    }
+
+    .liability-card {
+        background: var(--bg-secondary);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 60px 40px;
+        max-width: 600px;
+        width: 100%;
+        box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
+    }
+
+    .liability-card h1 {
+        font-size: 1.5rem;
+        margin-bottom: 24px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--text-primary);
+    }
+
+    .liability-text {
+        font-size: 1rem;
+        color: var(--text-secondary);
+        line-height: 1.8;
+        margin-bottom: 40px;
+        max-height: 300px;
+        overflow-y: auto;
+        padding-right: 20px;
+    }
+
+    /* Custom Scrollbar */
+    .liability-text::-webkit-scrollbar { width: 4px; }
+    .liability-text::-webkit-scrollbar-track { background: var(--bg-primary); }
+    .liability-text::-webkit-scrollbar-thumb { background: var(--border); }
+
+    .checkbox-container {
+        display: flex;
+        gap: 16px;
+        align-items: flex-start;
+        margin-bottom: 40px;
+        cursor: pointer;
+    }
+
+    .checkbox-container input {
+        width: 20px;
+        height: 20px;
+        margin-top: 4px;
+        accent-color: var(--accent);
+        cursor: pointer;
+    }
+
+    .checkbox-label {
+        font-size: 0.95rem;
+        color: var(--text-primary);
+        line-height: 1.6;
+        user-select: none;
+    }
+
+    .btn-activate {
+        display: block;
+        width: 100%;
+        padding: 18px;
+        background: var(--text-primary);
+        color: var(--bg-primary);
+        border: none;
+        border-radius: 4px;
+        font-weight: 600;
+        font-size: 1rem;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        cursor: not-allowed;
+        opacity: 0.2;
+        transition: all 0.3s ease;
+        text-align: center;
+        text-decoration: none;
+    }
+
+    .btn-activate.ready {
+        opacity: 1;
+        cursor: pointer;
+    }
+
+    .btn-activate.ready:hover {
+        background: var(--accent);
+        color: white;
+        box-shadow: 0 0 20px var(--accent-glow);
+    }
+</style>
+
+<div class="activate-wrapper">
+    <div class="liability-card">
+        <h1>Liability Waiver</h1>
+        
+        <div class="liability-text">
+            <p style="margin-bottom: 20px;">The Deadhand Protocol is a non-custodial, open-source software suite designed for digital asset succession. By initializing a Sovereign Fuse, you acknowledge and agree to the following institutional terms:</p>
+            
+            <p style="margin-bottom: 20px;"><strong>1. AS-IS SOFTWARE:</strong> The software is provided "AS IS", without warranty of any kind, express or implied. The developers assume zero liability for the loss of digital assets, seed phrases, or private keys resulting from software use, user error, or protocol exploits.</p>
+            
+            <p style="margin-bottom: 20px;"><strong>2. SOVEREIGN RESPONSIBILITY:</strong> You are solely responsible for the physical and digital security of your Shards. Deadhand cannot recover your assets if you lose your local keys. </p>
+            
+            <p style="margin-bottom: 20px;"><strong>3. LIMITATION OF LIABILITY:</strong> In no event shall the authors or copyright holders be liable for any claim, damages or other liability, whether in an action of contract, tort or otherwise, arising from, out of or in connection with the software.</p>
+            
+            <p><strong>4. NON-CUSTODIAL NATURE:</strong> half radiation LLC never has access to your keys. We do not hold, manage, or facilitate the movement of your assets. We provide the mathematical framework; you provide the security.</p>
+        </div>
+
+        <label class="checkbox-container">
+            <input type="checkbox" id="tosCheck">
+            <span class="checkbox-label">
+                I explicitly acknowledge the non-custodial nature of the Deadhand Protocol and accept full responsibility for my digital legacy.
+            </span>
+        </label>
+
+        <a href="/checkout" id="activateBtn" class="btn-activate">Initialize Protocol</a>
+    </div>
+</div>
+
+<script>
+    const check = document.getElementById('tosCheck');
+    const btn = document.getElementById('activateBtn');
+
+    check.addEventListener('change', (e) => {
+        if (e.target.checked) {
+            btn.classList.add('ready');
+            btn.href = "/checkout";
+        } else {
+            btn.classList.remove('ready');
+            btn.removeAttribute('href');
+        }
+    });
+
+    // Handle the href carefully
+    btn.addEventListener('click', (e) => {
+        if (!check.checked) {
+            e.preventDefault();
+        }
+    });
+</script>
+{% endblock %}
