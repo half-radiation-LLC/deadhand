@@ -218,14 +218,14 @@
 
     <style>
         :root {
-            --bg-primary: #020617; /* Deep Space Slate */
-            --bg-secondary: #0f172a; /* Slate 900 */
-            --bg-tertiary: #1e293b; /* Slate 800 */
-            --text-primary: #f8fafc; /* Platinum White */
-            --text-secondary: #94a3b8; /* Slate 400 */
-            --accent: #0ea5e9; /* Aerospace Sky Blue */
-            --accent-glow: rgba(14, 165, 233, 0.2);
-            --border: #1e293b;
+            --bg-primary: #ffffff; /* Clean White */
+            --bg-secondary: #f9fafb; /* Light Gray */
+            --bg-tertiary: #f3f4f6; /* Gray 100 */
+            --text-primary: #0a0b0d; /* Coinbase Black */
+            --text-secondary: #5c677d; /* Coinbase Gray */
+            --accent: #0052ff; /* Coinbase Blue */
+            --accent-glow: rgba(0, 82, 255, 0.2);
+            --border: #eceff1;
             --font-main: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             --font-heading: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
@@ -285,10 +285,10 @@
             left: 0;
             right: 0;
             padding: 20px 0;
-            background: rgba(2, 6, 23, 0.85);
+            background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
-            border-bottom: 1px solid rgba(30, 41, 59, 0.5);
+            border-bottom: 1px solid var(--border);
             z-index: 1000;
         }
 
@@ -302,35 +302,60 @@
         }
 
         .nav-link {
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-            font-weight: 500;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            font-weight: 600;
             transition: color 0.2s;
         }
 
-        .nav-link:hover {
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
             color: var(--text-primary);
+        }
+
+        .mobile-menu {
+            display: none;
+            flex-direction: column;
+            gap: 16px;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(12px);
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            padding: 24px;
+            border-bottom: 1px solid var(--border);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+        }
+
+        .mobile-menu.open {
+            display: flex;
+        }
+
+        .nav-link:hover {
+            color: var(--accent);
         }
 
         .btn-primary {
             display: inline-flex;
             align-items: center;
             padding: 16px 32px;
-            background: var(--text-primary);
-            color: var(--bg-primary);
-            border-radius: 4px;
-            font-weight: 500;
+            background: var(--accent);
+            color: #ffffff;
+            border-radius: 100px;
+            font-weight: 600;
             font-size: 1rem;
-            letter-spacing: 0.02em;
-            transition: all 0.3s ease;
-            border: 1px solid transparent;
+            transition: background 0.2s;
+            border: none;
         }
 
         .btn-primary:hover {
-            background: transparent;
-            color: var(--text-primary);
-            border-color: var(--text-primary);
-            box-shadow: 0 0 20px rgba(248, 250, 252, 0.1);
+            background: #0045d8;
+            color: #ffffff;
         }
 
         .btn-secondary {
@@ -340,16 +365,15 @@
             background: transparent;
             color: var(--text-primary);
             border: 1px solid var(--border);
-            border-radius: 4px;
-            font-weight: 500;
+            border-radius: 100px;
+            font-weight: 600;
             font-size: 1rem;
-            letter-spacing: 0.02em;
             transition: all 0.3s ease;
         }
 
         .btn-secondary:hover {
             border-color: var(--text-secondary);
-            background: rgba(255, 255, 255, 0.03);
+            background: var(--bg-secondary);
         }
 
         /* Math Hero */
@@ -579,6 +603,10 @@
         }
 
         @media (max-width: 900px) {
+            .nav {
+                position: relative;
+            }
+
             .hero {
                 padding: 40px 0;
             }
@@ -604,6 +632,7 @@
             .hero-buttons {
                 flex-direction: column;
                 width: 100%;
+                align-items: center;
             }
 
             .hero-buttons a {
@@ -618,6 +647,10 @@
 
             .nav-desktop {
                 display: none;
+            }
+
+            .mobile-menu-btn {
+                display: block;
             }
 
             .footer-grid {
@@ -660,7 +693,7 @@
 
         .footer-grid {
             display: grid;
-            grid-template-columns: 2fr 1fr 1fr 1fr;
+            grid-template-columns: 2fr repeat(4, 1fr);
             gap: 60px;
             margin-bottom: 80px;
         }
@@ -700,15 +733,11 @@
 </script>
 
 <body>
-    <div id="vpnBanner" style="display: none; background: #e11d48; color: white; text-align: center; padding: 15px; font-weight: bold; position: sticky; top: 0; z-index: 2000;">
-        ⚠️ please disable your vpn. standard pricing applied.
-    </div>
     <header class="nav">
         <div class="nav-inner">
             <a href="/" style="display: flex; align-items: center; gap: 12px; margin-right: auto;">
-                <img src="/static/favicon.png" alt="Deadhand Logo" style="height: 32px; filter: grayscale(100%) brightness(200%);">
-                <span
-                    style="font-weight: 600; font-size: 1.25rem; color: white; letter-spacing: 0.1em; text-transform: uppercase;">DEADHAND</span>
+                <img src="/static/favicon.png" alt="Deadhand Logo" style="height: 32px; filter: brightness(0);">
+                <span style="font-weight: 700; font-size: 1.25rem; color: var(--accent); letter-spacing: 0.1em; text-transform: uppercase;">DEADHAND</span>
             </a>
 
             <nav class="nav-desktop" style="display: flex; gap: 32px; align-items: center;">
@@ -718,28 +747,37 @@
                 <a href="/blog" class="nav-link">Intelligence</a>
                 <a href="/download" class="btn-primary" style="padding: 10px 24px; font-size: 0.85rem;">Get Started</a>
             </nav>
+
+            <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+
+        <div class="mobile-menu">
+            <a href="/tools/bus-factor" class="nav-link">Risk Calculator</a>
+            <a href="/download" class="nav-link">Sovereign Client</a>
+            <a href="/protocol" class="nav-link">Protocol</a>
+            <a href="/blog" class="nav-link">Intelligence</a>
+            <a href="/download" class="btn-primary" style="text-align: center; width: 100%; box-sizing: border-box;">Get Started</a>
         </div>
     </header>
 
     <main id="main-content">
         <!-- Hero Section -->
-        <section class="hero" style="padding-top: 60px; padding-bottom: 80px;">
+        <section class="hero" style="padding-top: 100px; padding-bottom: 80px; background: #ffffff;">
             <div class="container">
                 <div class="hero-grid">
                     <div>
-                        <div class="hero-badge" style="margin-left: 0;">Institutional Digital Succession</div>
-                        <h1 id="hero-headline" style="font-size: clamp(3rem, 4.5vw, 4.5rem); text-align: left; line-height: 1.1;">Cryptographic certainty.<br><span class="accent-text" style="color: var(--text-secondary); font-weight: 400;">Generational wealth.</span></h1>
-                        <p id="hero-subtext" style="font-size: 1.15rem; font-weight: 400; margin-bottom: 40px; line-height: 1.6; color: var(--text-secondary);">
-                            Deadhand Protocol provides trustless, mathematical succession planning for high-net-worth digital portfolios. Eliminate probate risk, ensure seamless transfer to beneficiaries, and maintain absolute sovereignty over your assets.
+                        <h1 id="hero-headline" style="font-size: clamp(3.5rem, 5vw, 4.5rem); font-weight: 700; letter-spacing: -0.04em; line-height: 1.1; margin-bottom: 24px; color: var(--text-primary);">The future of onchain inheritance.</h1>
+                        <p id="hero-subtext" style="font-size: 1.25rem; font-weight: 400; margin-bottom: 40px; line-height: 1.6; color: var(--text-secondary);">
+                            Securely pass your assets to your family with a trustless, non-custodial protocol. Built to bring seamless succession onchain.
                         </p>
                         <div class="hero-buttons">
-                            <a id="hero-cta" href="/activate" class="btn-primary">Secure Your Legacy</a>
-                            <a href="/protocol" class="btn-secondary">Read The Protocol</a>
+                            <a id="hero-cta" href="/activate" class="btn-primary" style="white-space: nowrap; border-radius: 100px;">Get Started</a>
                         </div>
                     </div>
-                    <div style="position: relative;">
-                        <img src="/static/images/hero_art.png" alt="Abstract Monet Style Vault" style="width: 100%; height: auto; border-radius: 8px; box-shadow: 0 30px 60px rgba(0,0,0,0.5); border: 1px solid var(--border);">
-                        <div style="position: absolute; inset: 0; background: linear-gradient(45deg, rgba(14, 165, 233, 0.1) 0%, rgba(0,0,0,0) 100%); border-radius: 8px; pointer-events: none;"></div>
+                    <div style="position: relative; background: var(--accent); border-radius: 24px; padding: 40px; display: flex; align-items: center; justify-content: center; min-height: 500px;">
+                        <img src="/static/images/hero_art.png" alt="Deadhand App" style="width: 90%; height: auto; border-radius: 16px; box-shadow: 0 30px 60px rgba(0,0,0,0.3);">
                     </div>
                 </div>
             </div>
@@ -1038,50 +1076,79 @@
         </section>
 
         <!-- Final CTA Section -->
-        <section class="section" style="background: var(--bg-tertiary); border-top: 1px solid var(--border);">
+        <section class="section" style="background: var(--accent); color: white; border-top: 1px solid var(--border);">
             <div class="container" style="text-align: center; max-width: 800px;">
-                <h2 style="margin-bottom: 24px;">Ditch the cloud, embrace privacy.</h2>
-                <p style="font-size: 1.25rem; margin-bottom: 40px;">Take control of your data. Secure your legacy today.</p>
-                <a href="/checkout" class="btn-primary" style="padding: 18px 40px; font-size: 1.1rem;">Get Sovereign Access Now</a>
+                <h2 style="margin-bottom: 24px; color: white;">Take control of your money</h2>
+                <p style="font-size: 1.25rem; margin-bottom: 40px; color: rgba(255,255,255,0.9);">Start your portfolio today and discover cryptographic certainty.</p>
+                <a href="/activate" class="btn-primary" style="padding: 18px 40px; font-size: 1.1rem; background: white; color: var(--accent);">Get Started</a>
             </div>
         </section>
     </main>
 
-    <footer class="footer">
+    <footer class="footer" style="background: white; border-top: 1px solid var(--border); padding: 80px 0 40px 0; color: var(--text-primary);">
         <div class="container">
             <div class="footer-grid">
+                <!-- Brand Col -->
                 <div>
-                    <a href="/" style="display: flex; align-items: center; gap: 12px; margin-bottom: 32px;">
-                        <img src="/static/favicon.png" alt="Deadhand" style="height: 28px;">
-                        <span style="font-weight: 800; color: white; letter-spacing: -0.05em;">DEADHAND</span>
+                    <a href="/" style="display: flex; align-items: center; gap: 12px; margin-bottom: 24px;">
+                        <img src="/static/favicon.png" alt="Deadhand" style="height: 28px; filter: brightness(0);">
+                        <span style="font-weight: 700; color: var(--accent); letter-spacing: 0.05em; font-size: 1.2rem;">DEADHAND</span>
                     </a>
-                    <p style="font-size: 0.9rem; color: var(--text-secondary);">The global standard for trustless
-                        digital inheritance. Built for the sovereign individual.</p>
+                    <div style="display: flex; gap: 16px; margin-top: 24px;">
+                        <a href="https://x.com/deadhandhq" style="color: var(--text-secondary); font-size: 1.2rem;"><i class="fab fa-x-twitter"></i></a>
+                        <a href="https://github.com/half-radiation-LLC/deadhand" style="color: var(--text-secondary); font-size: 1.2rem;"><i class="fab fa-github"></i></a>
+                        <a href="https://discord.gg/eDyCkgvBjf" style="color: var(--text-secondary); font-size: 1.2rem;"><i class="fab fa-discord"></i></a>
+                    </div>
                 </div>
+                <!-- Company -->
                 <div>
-                    <h4 class="footer-title">Products</h4>
-                    <a href="/download" class="footer-link">Desktop Client</a>
-                    <a href="/tools/bus-factor" class="footer-link">Risk Calculator</a>
-                    <a href="/whitepaper" class="footer-link">Protocol Spec</a>
+                    <h4 style="font-weight: 600; margin-bottom: 16px;">Company</h4>
+                    <ul style="list-style: none; display: flex; flex-direction: column; gap: 12px;">
+                        <li><a href="#" style="color: var(--text-secondary);">About</a></li>
+                        <li><a href="#" style="color: var(--text-secondary);">Careers</a></li>
+                        <li><a href="/blog" style="color: var(--text-secondary);">Blog</a></li>
+                        <li><a href="#" style="color: var(--text-secondary);">Security</a></li>
+                        <li><a href="/privacy" style="color: var(--text-secondary);">Legal & privacy</a></li>
+                        <li><a href="#" style="color: var(--text-secondary);">Cookie policy</a></li>
+                    </ul>
                 </div>
+                <!-- Learn -->
                 <div>
-                    <h4 class="footer-title">Company</h4>
-                    <a href="/blog" class="footer-link">Intelligence</a>
-                    <a href="https://github.com/half-radiation-LLC/deadhand" class="footer-link">GitHub</a>
-                    <a href="https://giveth.io/project/deadhand-protocol:-trustless-crypto-inheritance" class="footer-link" target="_blank">Donate on Giveth</a>
-                    <a href="mailto:halfradiationllc@gmail.com" class="footer-link">Support</a>
+                    <h4 style="font-weight: 600; margin-bottom: 16px;">Learn</h4>
+                    <ul style="list-style: none; display: flex; flex-direction: column; gap: 12px;">
+                        <li><a href="/protocol" style="color: var(--text-secondary);">Protocol Spec</a></li>
+                        <li><a href="/tools/bus-factor" style="color: var(--text-secondary);">Risk Calculator</a></li>
+                        <li><a href="#" style="color: var(--text-secondary);">Crypto basics</a></li>
+                        <li><a href="#" style="color: var(--text-secondary);">What is a blockchain?</a></li>
+                        <li><a href="#" style="color: var(--text-secondary);">Market updates</a></li>
+                    </ul>
                 </div>
-                <div class="footer-bottom-links">
-                    <a href="/privacy" class="footer-link">Privacy Policy</a>
-                    <a href="/terms" class="footer-link">Legal</a>
+                <!-- Individuals -->
+                <div>
+                    <h4 style="font-weight: 600; margin-bottom: 16px;">Individuals</h4>
+                    <ul style="list-style: none; display: flex; flex-direction: column; gap: 12px;">
+                        <li><a href="/download" style="color: var(--text-secondary);">Sovereign Client</a></li>
+                        <li><a href="#" style="color: var(--text-secondary);">Buy & sell</a></li>
+                        <li><a href="#" style="color: var(--text-secondary);">Base App</a></li>
+                        <li><a href="#" style="color: var(--text-secondary);">Deadhand One</a></li>
+                    </ul>
+                </div>
+                <!-- Support -->
+                <div>
+                    <h4 style="font-weight: 600; margin-bottom: 16px;">Support</h4>
+                    <ul style="list-style: none; display: flex; flex-direction: column; gap: 12px;">
+                        <li><a href="#" style="color: var(--text-secondary);">Help center</a></li>
+                        <li><a href="mailto:halfradiationllc@gmail.com" style="color: var(--text-secondary);">Contact us</a></li>
+                        <li><a href="#" style="color: var(--text-secondary);">Create account</a></li>
+                        <li><a href="#" style="color: var(--text-secondary);">Status</a></li>
+                    </ul>
                 </div>
             </div>
-            <div class="footer-bottom">
-                <span>© 2026 half radiation LLC. All rights reserved.</span>
+            <div style="border-top: 1px solid var(--border); padding-top: 24px; display: flex; justify-content: space-between; color: var(--text-secondary); font-size: 0.9rem;">
+                <span>© 2026 Deadhand Protocol</span>
                 <div style="display: flex; gap: 24px;">
-                    <a href="https://x.com/deadhandhq" style="color: inherit;"><i class="fab fa-x-twitter"></i></a>
-                    <a href="https://github.com/half-radiation-LLC/deadhand" style="color: inherit;"><i class="fab fa-github"></i></a>
-                    <a href="https://discord.gg/eDyCkgvBjf" style="color: inherit;"><i class="fab fa-discord"></i></a>
+                    <a href="/privacy" style="color: inherit;">Privacy</a>
+                    <a href="/terms" style="color: inherit;">Terms & Conditions</a>
                 </div>
             </div>
         </div>
@@ -1274,80 +1341,6 @@
                 capture_pageleave: true,
                 capture_scroll_depth: true
             })
-    </script>
-    <script>
-        // Simple heuristic to detect VPN/Proxy using IP API
-        async function checkVPN() {
-            try {
-                const response = await fetch('https://ipapi.co/json/');
-                if (!response.ok) return;
-                
-                const data = await response.json();
-                
-                // VPN/Proxy detection heuristic based on org keywords
-                const org = (data.org || "").toLowerCase();
-                const isVPN = org.includes('hosting') ||
-                              org.includes('datacenter') ||
-                              org.includes('cloud') ||
-                              org.includes('vpn') ||
-                              org.includes('proxy') ||
-                              org.includes('amazon') ||
-                              org.includes('aws') ||
-                              org.includes('digitalocean') ||
-                              org.includes('digital ocean') ||
-                              org.includes('linode') ||
-                              org.includes('hetzner') ||
-                              org.includes('ovh') ||
-                              org.includes('mullvad') ||
-                              org.includes('nordvpn') ||
-                              org.includes('expressvpn') ||
-                              org.includes('m247') ||
-                              org.includes('datacamp') ||
-                              org.includes('leaseweb') ||
-                              org.includes('vultr') ||
-                              org.includes('choopa') ||
-                              org.includes('quadranet') ||
-                              org.includes('tzulo') ||
-                              org.includes('colocation') ||
-                              org.includes('server');
-
-                if (isVPN) {
-                    document.getElementById('vpnBanner').style.display = 'block';
-                    return;
-                }
-
-                const country = data.country || "";
-                
-                const tier2Countries = ['CL', 'BR', 'MX', 'AR', 'CO', 'PE', 'ZA', 'TR', 'RU', 'CN', 'TH', 'MY', 'PL', 'RO', 'HU'];
-                const tier3Countries = ['IN', 'PK', 'BD', 'NG', 'KE', 'VN', 'ID', 'PH', 'EG', 'DZ', 'MA', 'VE', 'LK'];
-
-                const sovereignPrice = document.getElementById('sovereignPrice');
-
-                if (tier3Countries.includes(country)) {
-                    sovereignPrice.innerHTML = '<span style="text-decoration: line-through; opacity: 0.5; font-size: 0.6em; margin-right: 8px;">$300</span>$100';
-                } else if (tier2Countries.includes(country)) {
-                    sovereignPrice.innerHTML = '<span style="text-decoration: line-through; opacity: 0.5; font-size: 0.6em; margin-right: 8px;">$300</span>$200';
-                }
-
-                // Localization for high-impact elements
-                const headline = document.getElementById('hero-headline');
-                const subtext = document.getElementById('hero-subtext');
-                const cta = document.getElementById('hero-cta');
-
-                if (country === 'FR') {
-                    if (headline) headline.innerHTML = 'Emportez vos clés dans la tombe.<br><span class="accent-text">Laissez la richesse.</span>';
-                    if (subtext) subtext.innerText = "Vous avez passé votre vie à contourner le système fiduciaire. Ne laissez pas les tribunaux de succession le voler à votre mort. Deadhand garantit que votre famille reçoit tout, l'État rien.";
-                    if (cta) cta.innerText = "Contourner l'État";
-                } else if (country === 'DE') {
-                    if (headline) headline.innerHTML = 'Nimm deine Schlüssel mit ins Grab.<br><span class="accent-text">Hinterlasse das Vermögen.</span>';
-                    if (subtext) subtext.innerText = "Sie haben Ihr Leben damit verbracht, das Fiat-System zu umgehen. Lassen Sie nicht zu, dass Nachlassgerichte es stehlen, wenn Sie sterben. Deadhand stellt sicher, dass Ihre Familie alles bekommt und der Staat nichts.";
-                    if (cta) cta.innerText = "Den Staat umgehen";
-                }
-            } catch (err) {
-                console.warn('Failed to check VPN status:', err);
-            }
-        }
-        window.addEventListener('DOMContentLoaded', checkVPN);
     </script>
 </body>
 
