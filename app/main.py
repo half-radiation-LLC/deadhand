@@ -475,9 +475,41 @@ async def protocol_wiki(request: Request):
         context={"content": content_html}
     )
 
+import httpx
+
+@app.post("/activate", response_class=HTMLResponse)
 @app.get("/activate", response_class=HTMLResponse)
-async def activate_page(request: Request):
-    """Liability waiver before checkout"""
+async def activate_page(request: Request, background_tasks: BackgroundTasks):
+    """Liability waiver before checkout, capturing optional email intent"""
+    
+    async def send_to_discord(email: str):
+        webhook_url = "https://discord.com/api/webhooks/1485974113515212820/_HwvYcKVll1ZKsCicz1AZ3vd5ar0I3pfy41GQ6B8_I7KdtdZEqrLFTgg5O8mFcdVG9cU"
+        payload = {
+            "content": None,
+            "embeds": [{
+                "title": "🚨 New Interested Lead",
+                "description": f"**Email:** {email}",
+                "color": 3447003,
+                "timestamp": datetime.utcnow().isoformat()
+            }]
+        }
+        try:
+            async with httpx.AsyncClient() as client:
+                await client.post(webhook_url, json=payload)
+        except Exception as e:
+            print(f"Failed to send to Discord: {e}")
+
+    # Handle form submission if POST or query param
+    email = None
+    if request.method == "POST":
+        form = await request.form()
+        email = form.get("email")
+    elif request.method == "GET":
+        email = request.query_params.get("email")
+
+    if email:
+        background_tasks.add_task(send_to_discord, email)
+
     return templates.TemplateResponse(request=request, name="activate.html", context={})
 
 @app.get("/buy")
