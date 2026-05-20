@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import List, Optional
 import os
 from dotenv import load_dotenv
+from pydantic import BaseModel
 
 # x402 Paywall Imports
 from x402.http import FacilitatorConfig, HTTPFacilitatorClient, PaymentOption
@@ -511,6 +512,41 @@ async def activate_page(request: Request, background_tasks: BackgroundTasks):
         background_tasks.add_task(send_to_discord, email)
 
     return templates.TemplateResponse(request=request, name="activate.html", context={})
+
+class OnboardingData(BaseModel):
+    beneficiary: Optional[str] = None
+    fear: Optional[str] = None
+    value: Optional[str] = None
+    emotion: Optional[str] = None
+    technical: Optional[str] = None
+
+@app.post("/api/onboarding-data")
+async def save_onboarding_data(data: OnboardingData, background_tasks: BackgroundTasks):
+    async def send_to_discord(payload_data: OnboardingData):
+        webhook_url = "https://discord.com/api/webhooks/1485974113515212820/_HwvYcKVll1ZKsCicz1AZ3vd5ar0I3pfy41GQ6B8_I7KdtdZEqrLFTgg5O8mFcdVG9cU"
+        payload = {
+            "content": None,
+            "embeds": [{
+                "title": "🧠 Onboarding Completed",
+                "description": (
+                    f"**Beneficiary:** {payload_data.beneficiary}\n"
+                    f"**Fear:** {payload_data.fear}\n"
+                    f"**Value:** {payload_data.value}\n"
+                    f"**Emotion:** {payload_data.emotion}\n"
+                    f"**Technical:** {payload_data.technical}"
+                ),
+                "color": 15158332,
+                "timestamp": datetime.utcnow().isoformat()
+            }]
+        }
+        try:
+            async with httpx.AsyncClient() as client:
+                await client.post(webhook_url, json=payload)
+        except Exception as e:
+            print(f"Failed to send onboarding data to Discord: {e}")
+            
+    background_tasks.add_task(send_to_discord, data)
+    return {"status": "ok"}
 
 @app.get("/buy")
 async def buy_chooser(request: Request):

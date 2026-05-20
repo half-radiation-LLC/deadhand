@@ -8,42 +8,141 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        min-height: 80vh;
+        min-height: 85vh;
         padding: 40px 20px;
     }
 
-    .liability-card {
-        background: var(--bg-secondary);
+    .onboarding-card {
+        background: var(--bg-primary);
         border: 1px solid var(--border);
-        border-radius: 8px;
-        padding: 60px 40px;
-        max-width: 600px;
+        border-radius: 12px;
+        padding: 60px 50px;
+        max-width: 650px;
         width: 100%;
-        box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
+        position: relative;
+        overflow: hidden;
     }
 
-    .liability-card h1 {
-        font-size: 1.5rem;
-        margin-bottom: 24px;
-        letter-spacing: 0.1em;
+    .progress-bar-container {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 6px;
+        background: var(--bg-tertiary);
+    }
+
+    .progress-bar {
+        height: 100%;
+        background: var(--accent);
+        width: 20%;
+        transition: width 0.4s ease;
+    }
+
+    .step-counter {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        font-weight: 600;
+        letter-spacing: 0.05em;
         text-transform: uppercase;
+        margin-bottom: 24px;
+        display: inline-block;
+        padding: 4px 12px;
+        background: var(--bg-secondary);
+        border-radius: 100px;
+    }
+
+    .onboarding-card h1 {
+        font-size: 2rem;
+        margin-bottom: 16px;
+        letter-spacing: -0.02em;
         color: var(--text-primary);
+        font-weight: 700;
+    }
+
+    .onboarding-card p.subtitle {
+        font-size: 1.1rem;
+        color: var(--text-secondary);
+        margin-bottom: 40px;
+    }
+
+    .step-content {
+        display: none;
+        animation: fadeIn 0.4s ease;
+    }
+
+    .step-content.active {
+        display: block;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .options-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 16px;
+        margin-bottom: 40px;
+    }
+
+    .option-btn {
+        background: var(--bg-secondary);
+        border: 1px solid var(--border);
+        padding: 20px 24px;
+        border-radius: 8px;
+        text-align: left;
+        font-size: 1.05rem;
+        font-weight: 500;
+        color: var(--text-primary);
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-family: var(--font-main);
+    }
+
+    .option-btn:hover {
+        border-color: var(--accent);
+        background: rgba(0, 82, 255, 0.02);
+    }
+
+    .option-btn.selected {
+        border-color: var(--accent);
+        background: rgba(0, 82, 255, 0.05);
+        color: var(--accent);
+    }
+
+    .option-btn i {
+        color: var(--border);
+        transition: color 0.2s;
+    }
+
+    .option-btn.selected i {
+        color: var(--accent);
     }
 
     .liability-text {
-        font-size: 1rem;
+        font-size: 0.95rem;
         color: var(--text-secondary);
-        line-height: 1.8;
+        line-height: 1.7;
         margin-bottom: 40px;
-        max-height: 300px;
+        max-height: 250px;
         overflow-y: auto;
         padding-right: 20px;
+        background: var(--bg-secondary);
+        padding: 20px;
+        border-radius: 8px;
+        border: 1px solid var(--border);
     }
 
     /* Custom Scrollbar */
-    .liability-text::-webkit-scrollbar { width: 4px; }
-    .liability-text::-webkit-scrollbar-track { background: var(--bg-primary); }
-    .liability-text::-webkit-scrollbar-thumb { background: var(--border); }
+    .liability-text::-webkit-scrollbar { width: 6px; }
+    .liability-text::-webkit-scrollbar-track { background: transparent; }
+    .liability-text::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
 
     .checkbox-container {
         display: flex;
@@ -51,12 +150,16 @@
         align-items: flex-start;
         margin-bottom: 40px;
         cursor: pointer;
+        background: var(--bg-secondary);
+        padding: 20px;
+        border-radius: 8px;
+        border: 1px solid var(--border);
     }
 
     .checkbox-container input {
-        width: 20px;
-        height: 20px;
-        margin-top: 4px;
+        width: 22px;
+        height: 22px;
+        margin-top: 2px;
         accent-color: var(--accent);
         cursor: pointer;
     }
@@ -64,27 +167,59 @@
     .checkbox-label {
         font-size: 0.95rem;
         color: var(--text-primary);
-        line-height: 1.6;
+        line-height: 1.5;
         user-select: none;
+        font-weight: 500;
     }
 
-    .btn-activate {
-        display: block;
-        width: 100%;
-        padding: 18px;
+    .actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 20px;
+        border-top: 1px solid var(--border);
+        padding-top: 30px;
+    }
+
+    .btn-back {
+        background: none;
+        border: none;
+        color: var(--text-secondary);
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-family: var(--font-main);
+    }
+
+    .btn-back:hover {
+        color: var(--text-primary);
+    }
+
+    .btn-next, .btn-activate {
+        padding: 16px 36px;
         background: var(--text-primary);
         color: var(--bg-primary);
         border: none;
-        border-radius: 4px;
+        border-radius: 100px;
         font-weight: 600;
         font-size: 1rem;
-        letter-spacing: 0.05em;
-        text-transform: uppercase;
-        cursor: not-allowed;
-        opacity: 0.2;
-        transition: all 0.3s ease;
-        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
         text-decoration: none;
+        font-family: var(--font-main);
+    }
+
+    .btn-next:hover, .btn-activate.ready:hover {
+        background: var(--accent);
+        color: white;
+    }
+
+    .btn-activate {
+        opacity: 0.3;
+        cursor: not-allowed;
     }
 
     .btn-activate.ready {
@@ -92,55 +227,291 @@
         cursor: pointer;
     }
 
-    .btn-activate.ready:hover {
+    .btn-next:disabled {
+        opacity: 0.3;
+        cursor: not-allowed;
+    }
+
+    /* Custom Input & Slider Styles */
+    .custom-input {
+        width: 100%;
+        padding: 20px;
+        font-size: 1.2rem;
+        background: var(--bg-secondary);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        color: var(--text-primary);
+        font-family: var(--font-main);
+        outline: none;
+        transition: border-color 0.2s;
+        margin-bottom: 20px;
+    }
+
+    .custom-input:focus {
+        border-color: var(--accent);
+    }
+
+    .slider-container {
+        margin: 40px 0;
+        text-align: center;
+    }
+
+    .slider-value {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--accent);
+        margin-bottom: 20px;
+        font-family: var(--font-mono);
+    }
+
+    .custom-slider {
+        -webkit-appearance: none;
+        width: 100%;
+        height: 8px;
+        border-radius: 4px;
+        background: var(--bg-tertiary);
+        outline: none;
+        margin-bottom: 20px;
+    }
+
+    .custom-slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
         background: var(--accent);
-        color: white;
-        box-shadow: 0 0 20px var(--accent-glow);
+        cursor: pointer;
+        box-shadow: 0 0 10px rgba(0, 82, 255, 0.4);
+        transition: transform 0.1s;
+    }
+
+    .custom-slider::-webkit-slider-thumb:hover {
+        transform: scale(1.1);
+    }
+
+    @media (max-width: 600px) {
+        .onboarding-card { padding: 40px 24px; }
+        .onboarding-card h1 { font-size: 1.5rem; }
     }
 </style>
 
 <div class="activate-wrapper">
-    <div class="liability-card">
-        <h1>Liability Waiver</h1>
+    <div class="onboarding-card">
+        <div class="progress-bar-container">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
         
-        <div class="liability-text">
-            <p style="margin-bottom: 20px;">The Deadhand Protocol is a non-custodial, open-source software suite designed for digital asset succession. By initializing a Sovereign Fuse, you acknowledge and agree to the following institutional terms:</p>
+        <!-- Step 1 -->
+        <div class="step-content active" id="step1">
+            <span class="step-counter">Step 1 of 6</span>
+            <h1>Who are you protecting?</h1>
+            <p class="subtitle">Enter the first name or relationship of your primary beneficiary.</p>
             
-            <p style="margin-bottom: 20px;"><strong>1. AS-IS SOFTWARE:</strong> The software is provided "AS IS", without warranty of any kind, express or implied. The developers assume zero liability for the loss of digital assets, seed phrases, or private keys resulting from software use, user error, or protocol exploits.</p>
-            
-            <p style="margin-bottom: 20px;"><strong>2. SOVEREIGN RESPONSIBILITY:</strong> You are solely responsible for the physical and digital security of your Shards. Deadhand cannot recover your assets if you lose your local keys. </p>
-            
-            <p style="margin-bottom: 20px;"><strong>3. LIMITATION OF LIABILITY:</strong> In no event shall the authors or copyright holders be liable for any claim, damages or other liability, whether in an action of contract, tort or otherwise, arising from, out of or in connection with the software.</p>
-            
-            <p><strong>4. NON-CUSTODIAL NATURE:</strong> half radiation LLC never has access to your keys. We do not hold, manage, or facilitate the movement of your assets. We provide the mathematical framework; you provide the security.</p>
+            <input type="text" id="beneficiaryName" class="custom-input" placeholder="e.g., Sarah, My Wife, or Partner" autocomplete="off" oninput="handleInput1()">
+
+            <div class="actions" style="justify-content: flex-end;">
+                <button class="btn-next" id="next1" disabled onclick="nextStep(1)">Continue</button>
+            </div>
         </div>
 
-        <label class="checkbox-container">
-            <input type="checkbox" id="tosCheck">
-            <span class="checkbox-label">
-                I explicitly acknowledge the non-custodial nature of the Deadhand Protocol and accept full responsibility for my digital legacy.
-            </span>
-        </label>
+        <!-- Step 2 -->
+        <div class="step-content" id="step2">
+            <span class="step-counter">Step 2 of 6</span>
+            <h1>What is your biggest fear regarding your crypto legacy?</h1>
+            <p class="subtitle">Understanding the threat model helps cement your commitment to security.</p>
+            
+            <div class="options-grid">
+                <button class="option-btn" onclick="selectOption(2, 'Permanent loss of keys')">Permanent loss of keys <i class="fas fa-check-circle"></i></button>
+                <button class="option-btn" onclick="selectOption(2, 'State confiscation / Probate')">State confiscation / Probate courts <i class="fas fa-check-circle"></i></button>
+                <button class="option-btn" onclick="selectOption(2, 'Family infighting')">Family infighting <i class="fas fa-check-circle"></i></button>
+                <button class="option-btn" onclick="selectOption(2, 'Theft / Hackers')">Theft / Hackers <i class="fas fa-check-circle"></i></button>
+            </div>
 
-        <a href="/checkout" id="activateBtn" class="btn-activate">Initialize Protocol</a>
+            <div class="actions">
+                <button class="btn-back" onclick="prevStep(2)"><i class="fas fa-arrow-left"></i> Back</button>
+                <button class="btn-next" id="next2" disabled onclick="nextStep(2)">Continue</button>
+            </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="step-content" id="step3">
+            <span class="step-counter">Step 3 of 6</span>
+            <h1>What is the approximate value?</h1>
+            <p class="subtitle">This helps us understand the security tier necessary for your protocol setup.</p>
+            
+            <div class="slider-container">
+                <div class="slider-value" id="valDisplay">$50,000</div>
+                <input type="range" min="1000" max="1000000" value="50000" step="1000" class="custom-slider" id="valueSlider" oninput="handleSlider3()">
+            </div>
+
+            <div class="actions">
+                <button class="btn-back" onclick="prevStep(3)"><i class="fas fa-arrow-left"></i> Back</button>
+                <button class="btn-next" id="next3" onclick="nextStep(3)">Continue</button>
+            </div>
+        </div>
+
+        <!-- Step 4 -->
+        <div class="step-content" id="step4">
+            <span class="step-counter">Step 4 of 6</span>
+            <h1>How would it feel if these assets were lost forever?</h1>
+            <p class="subtitle">70% of crypto investors die without a recovery plan. The void claims everything.</p>
+            
+            <div class="slider-container">
+                <div class="slider-value" id="emoDisplay" style="font-size: 1.8rem; font-family: var(--font-main);">Painful</div>
+                <input type="range" min="1" max="100" value="50" class="custom-slider" id="emoSlider" oninput="handleSlider4()" style="background: linear-gradient(to right, #4CAF50, #f44336);">
+            </div>
+
+            <div class="actions">
+                <button class="btn-back" onclick="prevStep(4)"><i class="fas fa-arrow-left"></i> Back</button>
+                <button class="btn-next" id="next4" onclick="nextStep(4)">Continue</button>
+            </div>
+        </div>
+
+        <!-- Step 5 -->
+        <div class="step-content" id="step5">
+            <span class="step-counter">Step 5 of 6</span>
+            <h1>Are your beneficiaries technical?</h1>
+            <p class="subtitle">Multisig fails when non-technical family members are involved. We want to ensure a smooth recovery.</p>
+            
+            <div class="options-grid">
+                <button class="option-btn" onclick="selectOption(5, 'Yes')">Yes, they know how to use cold storage <i class="fas fa-check-circle"></i></button>
+                <button class="option-btn" onclick="selectOption(5, 'Somewhat')">Somewhat, they have used exchanges <i class="fas fa-check-circle"></i></button>
+                <button class="option-btn" onclick="selectOption(5, 'No')">No, they have zero crypto experience <i class="fas fa-check-circle"></i></button>
+            </div>
+
+            <div class="actions">
+                <button class="btn-back" onclick="prevStep(5)"><i class="fas fa-arrow-left"></i> Back</button>
+                <button class="btn-next" id="next5" disabled onclick="nextStep(5)">Continue</button>
+            </div>
+        </div>
+
+        <!-- Step 6 -->
+        <div class="step-content" id="step6">
+            <span class="step-counter">Final Step</span>
+            <h1>Liability & Protocol Setup</h1>
+            <p class="subtitle">Review the institutional terms of the Deadhand Protocol before generating your Sovereign Fuse.</p>
+            
+            <div class="liability-text">
+                <p style="margin-bottom: 12px;"><strong>1. AS-IS SOFTWARE:</strong> The software is provided "AS IS", without warranty of any kind, express or implied. The developers assume zero liability for the loss of digital assets, seed phrases, or private keys resulting from software use, user error, or protocol exploits.</p>
+                <p style="margin-bottom: 12px;"><strong>2. SOVEREIGN RESPONSIBILITY:</strong> You are solely responsible for the physical and digital security of your Shards. Deadhand cannot recover your assets if you lose your local keys. </p>
+                <p style="margin-bottom: 12px;"><strong>3. LIMITATION OF LIABILITY:</strong> In no event shall the authors or copyright holders be liable for any claim, damages or other liability, whether in an action of contract, tort or otherwise, arising from, out of or in connection with the software.</p>
+                <p><strong>4. NON-CUSTODIAL NATURE:</strong> half radiation LLC never has access to your keys. We do not hold, manage, or facilitate the movement of your assets. We provide the mathematical framework; you provide the security.</p>
+            </div>
+
+            <label class="checkbox-container">
+                <input type="checkbox" id="tosCheck">
+                <span class="checkbox-label">
+                    I explicitly acknowledge the non-custodial nature of the Deadhand Protocol and accept full responsibility for my digital legacy.
+                </span>
+            </label>
+
+            <div class="actions">
+                <button class="btn-back" onclick="prevStep(6)"><i class="fas fa-arrow-left"></i> Back</button>
+                <a href="/checkout" id="activateBtn" class="btn-activate">Initialize Protocol</a>
+            </div>
+        </div>
     </div>
 </div>
 
 <script>
+    let currentStep = 1;
+    const totalSteps = 6;
+    let extractedData = {
+        beneficiary: null,
+        fear: null,
+        value: null,
+        emotion: null,
+        technical: null
+    };
+
+    function updateProgress() {
+        const percentage = ((currentStep - 1) / (totalSteps - 1)) * 100;
+        document.getElementById('progressBar').style.width = Math.max(16, percentage) + '%';
+    }
+
+    function selectOption(step, value) {
+        // Remove selected class from all buttons in this step
+        const buttons = document.querySelectorAll(`#step${step} .option-btn`);
+        buttons.forEach(btn => btn.classList.remove('selected'));
+        
+        // Add to clicked button
+        event.currentTarget.classList.add('selected');
+        
+        // Save data
+        if(step === 2) extractedData.fear = value;
+        if(step === 5) extractedData.technical = value;
+
+        // Enable next button
+        document.getElementById(`next${step}`).disabled = false;
+    }
+
+    // Input handlers
+    function handleInput1() {
+        const val = document.getElementById('beneficiaryName').value.trim();
+        extractedData.beneficiary = val;
+        document.getElementById('next1').disabled = val.length === 0;
+    }
+
+    function handleSlider3() {
+        const val = document.getElementById('valueSlider').value;
+        const formatted = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(val);
+        document.getElementById('valDisplay').innerText = val == 1000000 ? formatted + '+' : formatted;
+        extractedData.value = val;
+    }
+
+    function handleSlider4() {
+        const val = parseInt(document.getElementById('emoSlider').value);
+        let text = "Indifferent";
+        if (val > 20) text = "Annoying";
+        if (val > 40) text = "Painful";
+        if (val > 60) text = "A Severe Setback";
+        if (val > 80) text = "Absolutely Devastating";
+        
+        document.getElementById('emoDisplay').innerText = text;
+        extractedData.emotion = text;
+    }
+
+    // Initialize slider data since they default to enabled
+    handleSlider3();
+    handleSlider4();
+
+    function nextStep(step) {
+        document.getElementById(`step${step}`).classList.remove('active');
+        currentStep = step + 1;
+        document.getElementById(`step${currentStep}`).classList.add('active');
+        updateProgress();
+        
+        if (currentStep === 6) {
+            // Send extracted data to our backend webhook proxy
+            fetch("/api/onboarding-data", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(extractedData)
+            }).catch(err => console.error("Failed to sync onboarding data:", err));
+        }
+    }
+
+    function prevStep(step) {
+        document.getElementById(`step${step}`).classList.remove('active');
+        currentStep = step - 1;
+        document.getElementById(`step${currentStep}`).classList.add('active');
+        updateProgress();
+    }
+
     const check = document.getElementById('tosCheck');
     const btn = document.getElementById('activateBtn');
 
     check.addEventListener('change', (e) => {
         if (e.target.checked) {
             btn.classList.add('ready');
-            btn.href = "/checkout";
         } else {
             btn.classList.remove('ready');
-            btn.removeAttribute('href');
         }
     });
 
-    // Handle the href carefully
     btn.addEventListener('click', (e) => {
         if (!check.checked) {
             e.preventDefault();
